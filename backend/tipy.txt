@@ -1,0 +1,10 @@
+Tworzenie virtual env:
+    virtualenv nazwa
+
+Instalacja w virtual env paczki:
+    cd backend
+    webMonitor\scripts\activate
+    pip intall Flask
+
+wyjście z virtual env:
+    deactivate
