@@ -3,7 +3,7 @@ Tworzenie virtual env:
 
 Instalacja w virtual env paczki:
     cd backend
-    webMonitor\scripts\activate
+    virenv\scripts\activate
     pip intall Flask
 
 wyjście z virtual env:
