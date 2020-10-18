@@ -9,3 +9,4 @@ backend/__pycache__/
 backend/.vscode/
 backend/venv/
 backend/static
+backend/blueprints/__pycache__/
