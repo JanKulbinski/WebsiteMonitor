@@ -1,0 +1,11 @@
+materialy/
+pdf/Tresc-przedTata.docx
+pdf/notatki.docx
+
+
+
+# BACKEND
+backend/__pycache__/
+backend/.vscode/
+backend/venv/
+backend/static
