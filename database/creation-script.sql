@@ -4,13 +4,12 @@ USE websiteMonitor;
 
 CREATE TABLE users
 (
-  id              INT unsigned NOT NULL AUTO_INCREMENT,
+  mail            VARCHAR(255) NOT NULL,
   name            VARCHAR(150) NOT NULL,                
-  surname         VARCHAR(150) NOT NULL,                
-  mail            VARCHAR(255) NOT NULL,               
-  salt            CHAR(32) NOT NULL,                 
-  password        CHAR(128) NOT NULL,            
-  PRIMARY KEY     (id)                                 
+  surname         VARCHAR(150) NOT NULL,
+  salt            VARBINARY(32) NOT NULL,                 
+  password        VARBINARY(128) NOT NULL,            
+  PRIMARY KEY     (mail)                                 
 );
 
 INSERT INTO users (name, surname, mail, salt, password)
@@ -18,24 +17,24 @@ VALUES ('Jan', 'Kowalski', 'jan.kowalski@we.pl', 'nR4SWlPtW1HdHL6BKQSDcckbVkjmao
 
 CREATE TABLE monitors
 (
-  id               INT unsigned NOT NULL AUTO_INCREMENT,
-  url              VARCHAR(255) NOT NULL,               
-  choosenElements  VARCHAR(150),
-  keyWords 		   VARCHAR(255),
-  intervalMinutes  SMALLINT unsigned NOT NULL,
-  start 		   DATETIME NOT NULL,
-  end 			   DATETIME NOT NULL,
+  id               	  INT unsigned NOT NULL AUTO_INCREMENT,
+  url              	  VARCHAR(255) NOT NULL,               
+  choosenElements  	  VARCHAR(150),
+  keyWords 		   	  VARCHAR(255),
+  intervalMinutes  	  SMALLINT unsigned NOT NULL,
+  start 		   	  DATETIME NOT NULL,
+  end 			   	  DATETIME NOT NULL,
   mailNotification    BOOLEAN default FALSE,                 
   browserNotification BOOLEAN default FALSE,
-  author 			  INT unsigned NOT NULL,
+  author 			  VARCHAR(255) NOT NULL,
   FOREIGN KEY (author)
-        REFERENCES users(id)
+        REFERENCES users(mail)
         ON DELETE CASCADE,
   PRIMARY KEY     (id)  
 );
 
 INSERT INTO monitors (url, intervalMinutes, start, end, author)
-VALUES ('www.lfc.pl', '60', '2020-06-18 10:34:09', '2020-06-19 12:35:09', 1);
+VALUES ('www.lfc.pl', '60', '2020-06-18 10:34:09', '2020-06-19 12:35:09', 'jan.kowalski@we.pl');
 
 CREATE TABLE scans
 (
@@ -65,7 +64,7 @@ VALUES (1, '<!DOCTYPE html>
     </head>
     <body>
         <!-- the content goes here -->
-    </body>
+    </body>monitorsmonitors
 </html>');
 
 SHOW TABLES;
