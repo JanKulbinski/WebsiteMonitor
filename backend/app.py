@@ -4,8 +4,6 @@ from configure_db import configure_db
 
 app = Flask(__name__, static_folder="static")
 app.secret_key = "eEZJxcFsyR5WLnVa8LqHLpKPllJR8v10"
-PATH_TO_SAVE_STATIC = r'C:\Users\janku\OneDrive\WebsiteMonitor\backend'
-SERVER_URL = 'http://localhost:5000/'
 
 # configure db
 configure_db(app)
