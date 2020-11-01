@@ -1,41 +1,9 @@
 import React from 'react';
 import {API_URL}  from '../constants'
-
-const HomePageStyle = {
-    width: '100vw',
-    height: '60vh',
-    overflow: 'scroll'
-};
-
-const HomeDescription = () => {
-    
-    const description = 'This app enables to...';
-    const reasonsToUse = ['first', 'second', 'third'];
-    const reasons = reasonsToUse.map(r => <li>{r}</li>)
-    const ifShow = true;
-    return ifShow && (
-        <div>
-        <ul>
-            {reasons}
-        </ul>
-
-        <p>{description}</p>
-        </div>
-
-    )
-}
-
+import './homePage.scss'
 
 
 export default class HomePage extends React.Component {
-    constructor(props) {
-        super(props);
-        this.myRef = React.createRef();
-      }
-
-    state = {
-        title: 'dwa'
-    }
     
     onElementToMonitor = (message) => {
         const { data, origin } = message;
@@ -53,19 +21,31 @@ export default class HomePage extends React.Component {
     }
 
     render() {
-
-        const change = () => {
-            this.setState({
-                title :'trzeci'
-            })}
-
         return (
             <div>
-                <h1>{this.state.title}</h1>
-                <HomeDescription></HomeDescription>
-                <button onClick={change}>Change</button>
-                <iframe style={HomePageStyle} title="Inline Frame Example" src='http://localhost:5000/static/www.lfc.pl/www.lfc.pl/index.html'></iframe>
+            <main>
+                <header>
+                    <h1>Website Monitor</h1>
+                </header>
+                <ul>
+                    <li>Monitor changes on favourites websites</li>
+                    <li>Get instant information via mail or push notifications</li>
+                    <li>Share results of monitoring with colleagues</li>
+                    <li>Generate raport in PDF</li>
+                    <li>Create automatic chart</li>
+                </ul>
+                <img src="/logo400.png" alt="landscape" ></img>
+                <div className="buttons">
+                    <button>Sign in</button>
+                    <button>Sign up</button>
+                </div>
+            </main>
+            
+            <div>
+                <iframe title="Inline Frame Example" src='http://localhost:5000/static/www.lfc.pl/www.lfc.pl/index.html'></iframe>
             </div>
+            </div>
+
         )
     }
 }
