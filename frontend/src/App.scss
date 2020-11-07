@@ -1,0 +1,49 @@
+@import './variables.scss';
+body {
+    overflow: hidden;
+}
+
+main {
+    background-color: #fcd489;
+    background: url(/cover-napa.jpg) center center fixed;
+    -webkit-background-size: cover;
+    /* For WebKit*/
+    -moz-background-size: cover;
+    /* Mozilla*/
+    -o-background-size: cover;
+    /* Opera*/
+    background-size: cover;
+    overflow-y: scroll;
+    height: 100vh;
+}
+
+p {
+    font-size: 2rem;
+    font-weight: 500;
+    color: $beige;
+}
+
+ul {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    li {
+        margin: 15px 0;
+        font-weight: bold;
+        color: $black;
+        font-size: 1.5rem;
+    }
+}
+
+.row {
+    margin: 0 !important
+}
+
+.col-1,
+.col-2,
+.col-12,
+.col-lg-10,
+.col-lg-2 {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+}

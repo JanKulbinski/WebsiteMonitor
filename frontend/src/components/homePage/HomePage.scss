@@ -1,0 +1,36 @@
+@import './../../variables.scss';
+.home-page-wrapper {
+    background: url(/cover.jpg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    /* For WebKit*/
+    -moz-background-size: cover;
+    /* Mozilla*/
+    -o-background-size: cover;
+    /* Opera*/
+    background-size: cover;
+    /* Generic*/
+    overflow-y: scroll;
+    height: 100vh;
+    header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        h1 {
+            font-size: 4rem;
+            color: $black-header;
+            font-weight: bold;
+        }
+    }
+    span.glyph-wrapper {
+        margin-left: 10px;
+    }
+    .img-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    img {
+        width: 400px;
+        height: 400px;
+    }
+}
