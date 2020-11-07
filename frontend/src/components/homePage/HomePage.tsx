@@ -6,7 +6,7 @@ import { FaArrowRight, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
 export default class HomePage extends React.Component {
 
     componentDidMount() {
-        const ifLogged = localStorage.getItem('logged');
+       // const ifLogged = localStorage.getItem('logged');
     }
 
     setLeftPanel() {

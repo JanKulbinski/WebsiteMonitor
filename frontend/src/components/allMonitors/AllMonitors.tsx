@@ -1,5 +1,5 @@
 import React from 'react';
-import { MyNavbar } from '../../shared/Nabar';
+import { MyNavbar } from '../../shared/navbar/Nabar';
 import './AllMonitors.scss'
 
 export default class AllMonitors extends React.Component {

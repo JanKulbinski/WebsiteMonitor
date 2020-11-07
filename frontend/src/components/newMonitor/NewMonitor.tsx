@@ -1,7 +1,7 @@
 import React from 'react';
 import { API_URL } from '../../constants';
 import { IPostMessage } from '../../shared/types';
-import { MyNavbar } from '../../shared/Nabar';
+import { MyNavbar } from '../../shared/navbar/Nabar';
 import './NewMonitor.scss'
 
 
@@ -18,9 +18,7 @@ export default class MainApp extends React.Component<NoticeProps, { tag: string,
 
     onElementToMonitor = (message: IPostMessage) => {
         const { data, origin } = message;
-        console.log('here')
         if (origin === API_URL) {
-            console.log(data)
             const { tag, index } = data;
             this.setState({ tag: tag, index: index });
         }
