@@ -1,5 +1,7 @@
 from flask import Blueprint, request, session, jsonify, abort, make_response, send_from_directory
 from requests_html import HTMLSession
+from flask_cors import cross_origin
+
 from pywebcopy import WebPage, config
 from bs4 import BeautifulSoup
 import re
@@ -10,6 +12,7 @@ from app import mysql
 
 # gdy folder juz istnieje to strona nie jest sciagana, bedzie trzeba ja sciagac do temp
 @monitors.route("/page-to-monitor", methods=['GET'])
+@cross_origin()
 def save_whole_page():
     adress = request.args.get('adress')
     config.setup_config(adress, 'static')

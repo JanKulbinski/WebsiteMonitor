@@ -1,4 +1,5 @@
 from flask import Blueprint, request, session, jsonify, abort, make_response
+from flask_cors import cross_origin
 from requests_html import HTMLSession
 from base64 import b64decode
 import re
@@ -11,24 +12,28 @@ from app import mysql
 
 
 @auth.route("/health-check", methods=['GET'])
+@cross_origin()
 def healthCheck():
     if session.get('logged_in') == True:
         return jsonify(session.get('mail'))   
     abort(make_response(jsonify(message='Not logged in'), 401))
 
 @auth.route("/all-users", methods=['GET'])
+@cross_origin()
 def get_users():
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM users")
     return f'{cur.fetchall()}'
 
 @auth.route("/login", methods=['POST'])
+@cross_origin()
 def login():
-    if not ('mail' in request.form and 'password' in request.form):
+    data = request.get_json()
+    if not ('mail' in data and 'password' in data):
         abort(make_response(jsonify(message='Invalid form'), 400))
 
-    mail = request.form['mail']
-    password = request.form['password']
+    mail = data['mail']
+    password = data['password']
 
     cursor = mysql.connection.cursor()
     cursor.execute('SELECT salt FROM users WHERE mail = %s', (mail,))
@@ -48,22 +53,26 @@ def login():
         abort(make_response(jsonify(message="Incorrect credentials"), 401))
 
 @auth.route("/logout", methods=['POST'])
+@cross_origin()
 def logout():
     session.pop('logged_in', None)
     session.pop('mail', None)
     session.pop('name', None)
     session.pop('surname', None)
+    print('LOGOUT')
     return jsonify({'message': 'Successfully logged out'})
 
 @auth.route('/register', methods=['POST'])
+@cross_origin()
 def register():
-    if not ('name' in request.form and 'surname' in request.form and 'password' in request.form and 'mail' in request.form):
+    data = request.get_json()
+    if not ('name' in data and 'surname' in data and 'password' in data and 'mail' in data):
         abort(make_response(jsonify(message='Invalid form'), 400))
     
-    name = request.form['name']
-    surname = request.form['surname']
-    password = request.form['password']
-    mail = request.form['mail']
+    name = data['name']
+    surname = data['surname']
+    password = data['password']
+    mail = data['mail']
 
     cursor = mysql.connection.cursor()
     cursor.execute('SELECT * FROM users WHERE mail = %s', (mail,))
