@@ -3,6 +3,7 @@ import { Navbar, Nav} from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { NavbarLink } from '../BasicElements';
 import './Navbar.scss'
+import { authService } from '../../services/authService';
 
 
 const ulStyle = {
@@ -22,6 +23,13 @@ export const MyNavbar = ({componentId}: Props) => {
 
     const [activeLink] = useState(componentId);
 
+    const logout = () => {
+        localStorage.removeItem('isLogged');
+        authService.logout().catch(e => {
+            console.log(`error catch: ${e}`)
+        });
+    }
+
     return (
         <React.Fragment>
 
@@ -34,6 +42,8 @@ export const MyNavbar = ({componentId}: Props) => {
                         <Nav.Link style={activeLink === '2' ? activeStyle:undefined} as={Link} to="/all-monitors">All monitors</Nav.Link>
                         <Nav.Link style={activeLink === '3' ? activeStyle:undefined} as={Link} to="/">Charts</Nav.Link>
                         <Nav.Link style={activeLink === '4' ? activeStyle:undefined} as={Link} to="/">Back</Nav.Link>
+                        <Nav.Link style={activeLink === '5' ? activeStyle:undefined} as={Link} to="/" onClick={logout} >Log out</Nav.Link>
+
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>
@@ -44,6 +54,7 @@ export const MyNavbar = ({componentId}: Props) => {
                         <NavbarLink id='2' style={activeLink === '2' ? activeStyle:undefined} to="/all-monitors">All monitors</NavbarLink>
                         <NavbarLink id='3' style={activeLink === '3' ? activeStyle:undefined} to="/">Charts</NavbarLink>
                         <NavbarLink id='4' style={activeLink === '4' ? activeStyle:undefined} to="/">Back</NavbarLink>
+                        <NavbarLink id='5' style={activeLink === '5' ? activeStyle:undefined} to="/" onClick={logout}>Log out</NavbarLink>
                     </ul>
             </div>
         </React.Fragment>

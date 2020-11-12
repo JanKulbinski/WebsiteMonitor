@@ -1,0 +1,42 @@
+@import './../../variables.scss';
+.window {
+    background-color: $half-transparent-beige;
+    width: 80%;
+    font-size: 1.25rem;
+    padding: 10px 0 25px;
+    margin-bottom: 20px;
+    position: relative;
+    form {
+        margin-left: 10%;
+        button {
+            width: 90%;
+            margin-top: 40px;
+            padding: 5px 15px;
+            color: $beige;
+            background-color: transparent;
+            border: 2px solid $beige;
+            border-radius: 5px;
+            &:hover {
+                background-color: $beige;
+                color: $black;
+                cursor: pointer;
+                text-decoration: none;
+            }
+        }
+        .input-wrapper {
+            input {
+                width: 60%;
+            }
+            label {
+                margin-top: 20px;
+                color: $black
+            }
+        }
+    }
+    .exit {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+    }
+}
