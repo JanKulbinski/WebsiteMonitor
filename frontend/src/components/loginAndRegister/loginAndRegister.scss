@@ -29,7 +29,12 @@
             }
             label {
                 margin-top: 20px;
-                color: $black
+                color: $black;
+            }
+            .error {
+                color: red;
+                margin-left: 10px;
+                font-weight: 600;
             }
         }
     }
