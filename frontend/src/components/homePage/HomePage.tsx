@@ -11,9 +11,11 @@ type HomeState = {
     leftPanel: {
         register: boolean,
         login: boolean,
-        loading: boolean
+        loading: boolean,
+        error: boolean,
     },
-    isLogged: boolean
+    isLogged: boolean,
+    errorMessage: string
 }
 
 
@@ -22,19 +24,22 @@ export default class HomePage extends React.Component<{}, HomeState> {
     constructor(props: {}) {
         super(props)
         const isLogged = localStorage.getItem('isLogged') ? true : false;
-        const state = { leftPanel: { register: false, login: false, loading: false }, isLogged: isLogged };
+        const state = { leftPanel: { register: false, login: false, loading: false, error: false }, isLogged: isLogged, errorMessage : '' };
         this.state = state;
     }
 
     changeLeftPanelState(panelToTurnOn: string) {
+        const allFalse = { register: false, login: false, loading: false, error: false };
         if (panelToTurnOn === 'register') {
-            return { register: true, login: false, loading: false }
+            return { ...allFalse, register: true};
         } else if (panelToTurnOn === 'login') {
-            return { register: false, login: true, loading: false }
+            return { ...allFalse, login: true};
         } else if (panelToTurnOn === 'loading') {
-            return { register: false, login: false, loading: true }
+            return { ...allFalse, loading: true};
+        } else if (panelToTurnOn === 'error') {
+            return { ...allFalse, error: true};
         } else {
-            return { register: false, login: false, loading: false }
+            return allFalse;
         }
     }
 
@@ -49,8 +54,8 @@ export default class HomePage extends React.Component<{}, HomeState> {
         this.setState({ leftPanel: this.changeLeftPanelState('loading') });
         authService.register(user).then(response => {
             this.logInUser()
-        }).catch(e => {
-            console.log(`error catch: ${e}`)
+        }).catch(error => {
+            this.setState({ leftPanel: this.changeLeftPanelState('error'), errorMessage: error.response.data.message })
         });
 
     }
@@ -59,13 +64,14 @@ export default class HomePage extends React.Component<{}, HomeState> {
         this.setState({ leftPanel: this.changeLeftPanelState('loading') })
         authService.login(userPasses).then(response => {
             this.logInUser()
-        }).catch(e => {
-            console.log(`error catch: ${e}`)
+        }).catch(error => {
+            console.log(error.response.data);  
+            this.setState({ leftPanel: this.changeLeftPanelState('error'), errorMessage: error.response.data.message })
         });
     }
 
     setLeftPanel() {
-        const { register, login, loading } = this.state.leftPanel;
+        const { register, login, loading, error } = this.state.leftPanel;
 
         if (loading) {
             return (
@@ -79,6 +85,12 @@ export default class HomePage extends React.Component<{}, HomeState> {
             return <RegisterWindow onExitClick={this.handleExit} onSubmitClick={this.handleRegister}></RegisterWindow>
         } else if (login) {
             return <LoginWindow onExitClick={this.handleExit} onSubmitClick={this.handleLogin}></LoginWindow>
+        } else if (error) {
+            return (
+                <div className='col-lg-5 offset-lg-1 col-12 d-flex justify-content-center align-items-center'>  
+                    <b className="error-message">{this.state.errorMessage}</b>
+                </div>
+            )
         } else {
             return (
                 <ul className="col-lg-5 offset-lg-1 col-12 ">

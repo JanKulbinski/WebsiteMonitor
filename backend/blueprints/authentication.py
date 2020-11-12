@@ -37,20 +37,23 @@ def login():
 
     cursor = mysql.connection.cursor()
     cursor.execute('SELECT salt FROM users WHERE mail = %s', (mail,))
-    salt = cursor.fetchone()['salt']
-    password_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000, dklen=128)
+    userBymail = cursor.fetchone()
 
-    cursor.execute('SELECT * FROM users WHERE mail = %s AND password = %s', (mail, password_hash,))
-    user = cursor.fetchone()
+    if userBymail:
+        salt = userBymail['salt']
+        password_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000, dklen=128)
 
-    if user:
-        session['logged_in'] = True
-        session['mail'] = user['mail']
-        session['name'] = user['name']
-        session['surname'] = user['surname']
-        return jsonify({'message': 'Successfully logged in'})
-    else:
-        abort(make_response(jsonify(message="Incorrect credentials"), 401))
+        cursor.execute('SELECT * FROM users WHERE mail = %s AND password = %s', (mail, password_hash,))
+        user = cursor.fetchone()
+        
+        if user:
+            session['logged_in'] = True
+            session['mail'] = user['mail']
+            session['name'] = user['name']
+            session['surname'] = user['surname']
+            return jsonify({'message': 'Successfully logged in'})
+
+    abort(make_response(jsonify(message="Incorrect credentials"), 401))
 
 @auth.route("/logout", methods=['POST'])
 @cross_origin()
