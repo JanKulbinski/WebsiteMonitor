@@ -4,8 +4,10 @@ import { StyledLink, StyledButton } from '../../shared/BasicElements'
 import { FaArrowRight, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
 import { authService } from '../../services/authService';
 import { UserPasses, User } from '../../shared/types';
-import Spinner from 'react-bootstrap/esm/Spinner';
+import Loader from 'react-loader-spinner'
+
 import { RegisterWindow, LoginWindow } from '../loginAndRegister/loginAndRegister';
+import get from 'lodash/get';
 
 type HomeState = {
     leftPanel: {
@@ -23,21 +25,22 @@ export default class HomePage extends React.Component<{}, HomeState> {
 
     constructor(props: {}) {
         super(props)
-        const isLogged = localStorage.getItem('isLogged') ? true : false;
-        const state = { leftPanel: { register: false, login: false, loading: false, error: false }, isLogged: isLogged, errorMessage : '' };
+       const isLogged = localStorage.getItem('isLogged') ? true : false;
+       // const isLogged = true;
+        const state = { leftPanel: { register: false, login: false, loading: false, error: false }, isLogged: isLogged, errorMessage: '' };
         this.state = state;
     }
 
     changeLeftPanelState(panelToTurnOn: string) {
         const allFalse = { register: false, login: false, loading: false, error: false };
         if (panelToTurnOn === 'register') {
-            return { ...allFalse, register: true};
+            return { ...allFalse, register: true };
         } else if (panelToTurnOn === 'login') {
-            return { ...allFalse, login: true};
+            return { ...allFalse, login: true };
         } else if (panelToTurnOn === 'loading') {
-            return { ...allFalse, loading: true};
+            return { ...allFalse, loading: true };
         } else if (panelToTurnOn === 'error') {
-            return { ...allFalse, error: true};
+            return { ...allFalse, error: true };
         } else {
             return allFalse;
         }
@@ -52,21 +55,24 @@ export default class HomePage extends React.Component<{}, HomeState> {
 
     handleRegister = (user: User) => {
         this.setState({ leftPanel: this.changeLeftPanelState('loading') });
-        authService.register(user).then(response => {
+        authService.register(user).then((response) => {
+            localStorage.setItem('token', response.data.token)
             this.logInUser()
         }).catch(error => {
-            this.setState({ leftPanel: this.changeLeftPanelState('error'), errorMessage: error.response.data.message })
+            const response = get(error.response, 'data', '');
+            this.setState({ leftPanel: this.changeLeftPanelState('error'), errorMessage: response.message })
         });
 
     }
 
     handleLogin = (userPasses: UserPasses) => {
         this.setState({ leftPanel: this.changeLeftPanelState('loading') })
-        authService.login(userPasses).then(response => {
+        authService.login(userPasses).then((response) => {
+            localStorage.setItem('token', response.data.token)
             this.logInUser()
         }).catch(error => {
-            console.log(error.response.data);  
-            this.setState({ leftPanel: this.changeLeftPanelState('error'), errorMessage: error.response.data.message })
+            const response = get(error.response, 'data', '');
+            this.setState({ leftPanel: this.changeLeftPanelState('error'), errorMessage: response.message })
         });
     }
 
@@ -75,10 +81,13 @@ export default class HomePage extends React.Component<{}, HomeState> {
 
         if (loading) {
             return (
-                <div className='col-lg-5 offset-lg-1 col-12 d-flex justify-content-center align-items-center'>  
-                    <Spinner animation="border" role="status">
-                        <span className="sr-only">Loading...</span>
-                    </Spinner>
+                <div className='col-lg-5 offset-lg-1 col-12 d-flex justify-content-center align-items-center'>
+                    <Loader
+                        type="ThreeDots"
+                        color="#0e0700"
+                        height={150}
+                        width={150}
+                    />
                 </div>
             )
         } else if (register) {
@@ -87,7 +96,7 @@ export default class HomePage extends React.Component<{}, HomeState> {
             return <LoginWindow onExitClick={this.handleExit} onSubmitClick={this.handleLogin}></LoginWindow>
         } else if (error) {
             return (
-                <div className='col-lg-5 offset-lg-1 col-12 d-flex justify-content-center align-items-center'>  
+                <div className='col-lg-5 offset-lg-1 col-12 d-flex justify-content-center align-items-center'>
                     <b className="error-message">{this.state.errorMessage}</b>
                 </div>
             )

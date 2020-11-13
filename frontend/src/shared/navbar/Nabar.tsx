@@ -43,7 +43,6 @@ export const MyNavbar = ({componentId}: Props) => {
                         <Nav.Link style={activeLink === '3' ? activeStyle:undefined} as={Link} to="/">Charts</Nav.Link>
                         <Nav.Link style={activeLink === '4' ? activeStyle:undefined} as={Link} to="/">Back</Nav.Link>
                         <Nav.Link style={activeLink === '5' ? activeStyle:undefined} as={Link} to="/" onClick={logout} >Log out</Nav.Link>
-
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>

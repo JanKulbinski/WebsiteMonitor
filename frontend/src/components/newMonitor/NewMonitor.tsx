@@ -1,26 +1,44 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import { API_URL } from '../../constants';
 import { IPostMessage } from '../../shared/types';
 import { MyNavbar } from '../../shared/navbar/Nabar';
 import './NewMonitor.scss'
+import { StyledButton } from '../../shared/BasicElements';
+import styled from 'styled-components';
+import { monitorService } from '../../services/monitorsService';
+import get from 'lodash/get';
+import { FaCloud } from 'react-icons/fa';
+import Loader from 'react-loader-spinner'
 
 
-type NoticeProps = {
-    msg?: string
+type NewMonitorState = {
+    iFrameUrl: string;
+    isFrameLoading: boolean;
+    isFrameLoaded: boolean;
+    form: {
+        inputWebsite: string;
+    },
+    tag: string;
+    index: string;
 }
 
-export default class MainApp extends React.Component<NoticeProps, { tag: string, index: string }> {
+const GoButton = styled(StyledButton)`
+    width:15%;
+`
 
-    constructor(props: NoticeProps) {
+export default class NewMonitor extends React.Component<{}, NewMonitorState> {
+
+    constructor(props: {}) {
         super(props);
-        this.state = { tag: '', index: '' };
-    }
-
-    onElementToMonitor = (message: IPostMessage) => {
-        const { data, origin } = message;
-        if (origin === API_URL) {
-            const { tag, index } = data;
-            this.setState({ tag: tag, index: index });
+        this.state = {
+            iFrameUrl: '',
+            isFrameLoading: false,
+            isFrameLoaded: false,
+            form: {
+                inputWebsite: '',
+            },
+            tag: '',
+            index: ''
         }
     }
 
@@ -32,6 +50,55 @@ export default class MainApp extends React.Component<NoticeProps, { tag: string,
         window.removeEventListener('message', this.onElementToMonitor, false);
     }
 
+    handleValueChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = event.target;
+        this.setState({...this.state, [name]: value});
+    }
+
+    handleGo = () => {
+        monitorService.getPageToMonitor(this.state.iFrameUrl).then(response => {
+            const data = get(response, 'data', '');
+            const url = data ? data.location : '';
+            this.setState({ iFrameUrl: url, isFrameLoading: false, isFrameLoaded: true })
+        }).catch(error => {
+            const response = get(error.response, 'data', '');
+            alert(response.message)
+            console.log(response);
+        });
+        this.setState({ isFrameLoading: true })
+    }
+
+    onElementToMonitor = (message: IPostMessage) => {
+        const { data, origin } = message;
+        if (origin === API_URL) {
+            const { tag, index } = data;
+            this.setState({ tag: tag, index: index });
+        }
+    }
+    
+    setIframe = () => {
+        const { isFrameLoaded, isFrameLoading } = this.state;
+        let result;
+
+        if (!isFrameLoaded && !isFrameLoading) {
+            result = <FaCloud color="#0e0700" size={140}></FaCloud>
+        } else if (isFrameLoading) {
+            result = <Loader
+                type="ThreeDots"
+                color="#0e0700"
+                height={150}
+                width={150}
+         />
+        } else if (isFrameLoaded) {
+            result = <iframe title="Inline Frame Example" src={this.state.iFrameUrl}></iframe>
+        }
+
+        return (
+            <div className='iframe-place'>
+                {result}
+            </div>
+        )
+    }
 
     render() {
         return (
@@ -40,10 +107,15 @@ export default class MainApp extends React.Component<NoticeProps, { tag: string,
                     <MyNavbar componentId='1'></MyNavbar>
                 </div>
                 <main className='newMonitor col-lg-10 col-12'>
-                    <iframe title="Inline Frame Example" src='http://localhost:5000/static/www.lfc.pl/www.lfc.pl/index.html'></iframe>
-                    <p>Selected: {this.state.tag} : {this.state.index} </p>
-                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Vivamus porta tortor sed metus. Nam pretium. Sed tempor. Integer ullamcorper, odio quis porttitor sagittis, nisl erat tincidunt massa, eu eleifend eros nibh sollicitudin est. Nulla dignissim. Mauris sollicitudin, arcu id sagittis placerat, tellus mauris egestas felis, eget interdum mi nibh vel lorem. Aliquam egestas hendrerit massa. Suspendisse sed nunc et lacus feugiat hendrerit. Nam cursus euismod augue. Aenean vehicula nisl eu quam luctus adipiscing. Nunc consequat justo pretium orci. Mauris hendrerit fermentum massa. Aenean consectetuer est ut arcu. Aliquam nisl massa, blandit at, accumsan sed, porta vel, metus. Duis fringilla quam ut eros.</p>
-					<p>Sed eu ligula eget eros vulputate tincidunt. Etiam sapien urna, auctor a, viverra sit amet, convallis a, enim. Nullam ut nulla. Nam laoreet massa aliquet tortor. Mauris in quam ut dui bibendum malesuada. Nulla vel erat. Pellentesque metus risus, aliquet eget, eleifend in, ultrices vitae, nisi. Vivamus non nulla. Praesent ac lacus. Donec augue turpis, convallis sed, lacinia et, vestibulum nec, lacus. Suspendisse feugiat semper nunc. Donec nisl elit, varius sed, sodales volutpat, commodo in, elit. Proin ornare hendrerit lectus. Sed non dolor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis suscipit. Mauris egestas tincidunt lectus. Phasellus sed quam et velit laoreet pretium. Nunc metus.</p>
+                    <div className='inhalt'>
+                        <h1>Create new monitor</h1>
+                        {this.state.isFrameLoaded && <p>Double click to choose element to observe</p> }
+                        <div className='url-wrapper'>
+                            <input type='text' placeholder='Enter Website...' name='iFrameUrl' onChange={(e) => this.handleValueChange(e)}></input>
+                            <GoButton onClick={this.handleGo}>GO</GoButton>
+                        </div>
+                        {this.setIframe()}
+                    </div>
                 </main>
             </div>
         );
