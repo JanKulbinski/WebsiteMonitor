@@ -1,7 +1,12 @@
 from flask import Blueprint, request, session, jsonify, abort, make_response
+from flask_jwt_extended import (
+    jwt_required, create_access_token,
+    get_jwt_identity
+)
 from flask_cors import cross_origin
 from requests_html import HTMLSession
 from base64 import b64decode
+from datetime import timedelta
 import re
 import hashlib
 import os
@@ -47,22 +52,15 @@ def login():
         user = cursor.fetchone()
         
         if user:
-            session['logged_in'] = True
-            session['mail'] = user['mail']
-            session['name'] = user['name']
-            session['surname'] = user['surname']
-            return jsonify({'message': 'Successfully logged in'})
+            expires = timedelta(minutes=20)
+            access_token = create_access_token(identity=mail, expires_delta=expires)
+            return jsonify({'message': 'Successfully logged in', 'token': access_token})
 
     abort(make_response(jsonify(message="Incorrect credentials"), 401))
 
 @auth.route("/logout", methods=['POST'])
 @cross_origin()
 def logout():
-    session.pop('logged_in', None)
-    session.pop('mail', None)
-    session.pop('name', None)
-    session.pop('surname', None)
-    print('LOGOUT')
     return jsonify({'message': 'Successfully logged out'})
 
 @auth.route('/register', methods=['POST'])
@@ -101,9 +99,8 @@ def register():
         
         cursor.execute('INSERT INTO users VALUES (%s, %s, %s, %s, %s)', (mail, name, surname, salt, key,))
         mysql.connection.commit()
-        session['logged_in'] = True
-        session['mail'] = mail
-        session['name'] = name
-        session['surname'] = surname
-
-        return jsonify({'message': 'Successfully registered and logged in'}), 201
+        
+        expires = timedelta(minutes=20)
+        access_token = create_access_token(identity=mail, expires_delta=expires)
+        
+        return jsonify({'message': 'Successfully registered and logged in', 'token': access_token}), 201

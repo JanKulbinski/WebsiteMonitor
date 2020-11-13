@@ -1,7 +1,7 @@
 from flask import Blueprint, request, session, jsonify, abort, make_response, send_from_directory
 from requests_html import HTMLSession
 from flask_cors import cross_origin
-
+from flask_jwt_extended import decode_token
 from pywebcopy import WebPage, config
 from bs4 import BeautifulSoup
 import re
@@ -14,6 +14,11 @@ from app import mysql
 @monitors.route("/page-to-monitor", methods=['GET'])
 @cross_origin()
 def save_whole_page():
+    user_mail = decode_token(request.headers.get('Authorization')).get('identity')
+
+    if(not user_mail):
+        abort(make_response(jsonify(message="Session expired"), 401))
+
     adress = request.args.get('adress')
     config.setup_config(adress, 'static')
 
