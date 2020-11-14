@@ -15,8 +15,7 @@ type registerProps = {
 }
 
 
-export function LoginWindow(props: loginProps) {
-    const { onExitClick, onSubmitClick } = props;
+export function LoginWindow({onExitClick, onSubmitClick }: loginProps) {
     const [loginValue, setLoginValue] = useState({ mail: '', password: '', mailError: '', passwordError: '' });
 
     const handleValueChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -71,8 +70,7 @@ export function LoginWindow(props: loginProps) {
     )
 }
 
-export function RegisterWindow(props: registerProps) {
-    const { onExitClick, onSubmitClick } = props;
+export function RegisterWindow({ onExitClick, onSubmitClick }: registerProps) {
     const [userValue, setUserValue] = useState({
         name: '',
         surname: '',

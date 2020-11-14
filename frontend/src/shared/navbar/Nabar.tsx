@@ -25,6 +25,8 @@ export const MyNavbar = ({componentId}: Props) => {
 
     const logout = () => {
         localStorage.removeItem('isLogged');
+        localStorage.removeItem('token');
+        localStorage.removeItem('mail');
         authService.logout().catch(e => {
             console.log(`error catch: ${e}`)
         });

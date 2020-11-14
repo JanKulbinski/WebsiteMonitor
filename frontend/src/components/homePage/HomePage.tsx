@@ -56,6 +56,7 @@ export default class HomePage extends React.Component<{}, HomeState> {
     handleRegister = (user: User) => {
         this.setState({ leftPanel: this.changeLeftPanelState('loading') });
         authService.register(user).then((response) => {
+            localStorage.setItem('mail', user.mail);
             localStorage.setItem('token', response.data.token)
             this.logInUser()
         }).catch(error => {
@@ -68,7 +69,8 @@ export default class HomePage extends React.Component<{}, HomeState> {
     handleLogin = (userPasses: UserPasses) => {
         this.setState({ leftPanel: this.changeLeftPanelState('loading') })
         authService.login(userPasses).then((response) => {
-            localStorage.setItem('token', response.data.token)
+            localStorage.setItem('mail', userPasses.mail);
+            localStorage.setItem('token', response.data.token);
             this.logInUser()
         }).catch(error => {
             const response = get(error.response, 'data', '');

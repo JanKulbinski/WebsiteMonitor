@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from 'react';
 import { API_URL } from '../../constants';
-import { IPostMessage } from '../../shared/types';
+import { IPostMessage, Monitor } from '../../shared/types';
 import { MyNavbar } from '../../shared/navbar/Nabar';
 import './NewMonitor.scss'
 import { StyledButton } from '../../shared/BasicElements';
@@ -9,6 +9,7 @@ import { monitorService } from '../../services/monitorsService';
 import get from 'lodash/get';
 import { FaCloud } from 'react-icons/fa';
 import Loader from 'react-loader-spinner'
+import { NewMonitorForm } from '../newMonitorForm/NewMonitorForm';
 
 
 type NewMonitorState = {
@@ -52,10 +53,13 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
 
     handleValueChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
-        this.setState({...this.state, [name]: value});
+        this.setState({ ...this.state, [name]: value });
     }
 
     handleGo = () => {
+        //this.setState({ isFrameLoading: false, isFrameLoaded: true })
+
+        
         monitorService.getPageToMonitor(this.state.iFrameUrl).then(response => {
             const data = get(response, 'data', '');
             const url = data ? data.location : '';
@@ -66,6 +70,7 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
             console.log(response);
         });
         this.setState({ isFrameLoading: true })
+        
     }
 
     onElementToMonitor = (message: IPostMessage) => {
@@ -75,7 +80,7 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
             this.setState({ tag: tag, index: index });
         }
     }
-    
+
     setIframe = () => {
         const { isFrameLoaded, isFrameLoading } = this.state;
         let result;
@@ -88,7 +93,7 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
                 color="#0e0700"
                 height={150}
                 width={150}
-         />
+            />
         } else if (isFrameLoaded) {
             result = <iframe title="Inline Frame Example" src={this.state.iFrameUrl}></iframe>
         }
@@ -100,6 +105,10 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
         )
     }
 
+    handleSubmitClick = (monitor: Monitor) => {
+        console.log({monitor})
+    }
+
     render() {
         return (
             <div className='row'>
@@ -109,11 +118,15 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
                 <main className='newMonitor col-lg-10 col-12'>
                     <div className='inhalt'>
                         <h1>Create new monitor</h1>
-                        {this.state.isFrameLoaded && <p>Double click to choose element to observe</p> }
                         <div className='url-wrapper'>
                             <input type='text' placeholder='Enter Website...' name='iFrameUrl' onChange={(e) => this.handleValueChange(e)}></input>
                             <GoButton onClick={this.handleGo}>GO</GoButton>
                         </div>
+                        {this.state.isFrameLoaded &&
+                            <div className='form-wrapper'>
+                                <NewMonitorForm onSubmitClick={this.handleSubmitClick}></NewMonitorForm>
+                            </div>
+                        }
                         {this.setIframe()}
                     </div>
                 </main>

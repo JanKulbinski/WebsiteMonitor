@@ -15,3 +15,17 @@ export interface User {
     password :string, 
     password2: string
 }
+
+export interface Monitor {
+    start: string,
+    end: string,
+    choosenElement: {
+        tag: string,
+        index: number
+    },
+    keyWords: string,
+    intervalMinutes: number,
+    mailNotification: boolean,                 
+    browserNotification: boolean,
+    mail: string,
+}

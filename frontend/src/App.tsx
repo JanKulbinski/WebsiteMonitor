@@ -9,6 +9,7 @@ import NewMonitor from './components/newMonitor/NewMonitor';
 import AllMonitors from './components/allMonitors/AllMonitors';
 import HomePage from './components/homePage/HomePage'
 import Page404 from './components/Page404'
+import "react-datetime/css/react-datetime.css";
 
 function App() {
   return (
