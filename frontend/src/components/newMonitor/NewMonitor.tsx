@@ -57,9 +57,6 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
     }
 
     handleGo = () => {
-        //this.setState({ isFrameLoading: false, isFrameLoaded: true })
-
-        
         monitorService.getPageToMonitor(this.state.iFrameUrl).then(response => {
             const data = get(response, 'data', '');
             const url = data ? data.location : '';
@@ -70,7 +67,6 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
             console.log(response);
         });
         this.setState({ isFrameLoading: true })
-        
     }
 
     onElementToMonitor = (message: IPostMessage) => {
@@ -93,7 +89,7 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
                 color="#0e0700"
                 height={150}
                 width={150}
-            />
+         />
         } else if (isFrameLoaded) {
             result = <iframe title="Inline Frame Example" src={this.state.iFrameUrl}></iframe>
         }
