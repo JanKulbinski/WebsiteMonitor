@@ -20,67 +20,62 @@ type HomeState = {
     errorMessage: string
 }
 
+const changeLeftPanelState = (panelToTurnOn: string) => {
+    const allFalse = { register: false, login: false, loading: false, error: false };
+    if (panelToTurnOn === 'register') {
+        return { ...allFalse, register: true };
+    } else if (panelToTurnOn === 'login') {
+        return { ...allFalse, login: true };
+    } else if (panelToTurnOn === 'loading') {
+        return { ...allFalse, loading: true };
+    } else if (panelToTurnOn === 'error') {
+        return { ...allFalse, error: true };
+    } else {
+        return allFalse;
+    }
+}
 
 export default class HomePage extends React.Component<{}, HomeState> {
 
     constructor(props: {}) {
         super(props)
-       const isLogged = localStorage.getItem('isLogged') ? true : false;
-       // const isLogged = true;
+        const isLogged = localStorage.getItem('isLogged') ? true : false;
         const state = { leftPanel: { register: false, login: false, loading: false, error: false }, isLogged: isLogged, errorMessage: '' };
         this.state = state;
     }
 
-    changeLeftPanelState(panelToTurnOn: string) {
-        const allFalse = { register: false, login: false, loading: false, error: false };
-        if (panelToTurnOn === 'register') {
-            return { ...allFalse, register: true };
-        } else if (panelToTurnOn === 'login') {
-            return { ...allFalse, login: true };
-        } else if (panelToTurnOn === 'loading') {
-            return { ...allFalse, loading: true };
-        } else if (panelToTurnOn === 'error') {
-            return { ...allFalse, error: true };
-        } else {
-            return allFalse;
-        }
-    }
-
-    logInUser = () => {
-        this.setState({ leftPanel: this.changeLeftPanelState(''), isLogged: true });
+    logInUser = (mail:string, token:string) => {
+        this.setState({ leftPanel: changeLeftPanelState(''), isLogged: true });
         localStorage.setItem('isLogged', 'true');
+        localStorage.setItem('mail', mail);
+        localStorage.setItem('token', token);
     }
 
-    handleExit = () => this.setState({ leftPanel: this.changeLeftPanelState('') });
+    handleExit = () => this.setState({ leftPanel: changeLeftPanelState('') });
 
     handleRegister = (user: User) => {
-        this.setState({ leftPanel: this.changeLeftPanelState('loading') });
+        this.setState({ leftPanel: changeLeftPanelState('loading') });
         authService.register(user).then((response) => {
-            localStorage.setItem('mail', user.mail);
-            localStorage.setItem('token', response.data.token)
-            this.logInUser()
+            this.logInUser(user.mail,response.data.token)
         }).catch(error => {
             const response = get(error.response, 'data', '');
-            this.setState({ leftPanel: this.changeLeftPanelState('error'), errorMessage: response.message })
+            this.setState({ leftPanel: changeLeftPanelState('error'), errorMessage: response.message })
         });
 
     }
 
     handleLogin = (userPasses: UserPasses) => {
-        this.setState({ leftPanel: this.changeLeftPanelState('loading') })
+        this.setState({ leftPanel: changeLeftPanelState('loading') })
         authService.login(userPasses).then((response) => {
-            localStorage.setItem('mail', userPasses.mail);
-            localStorage.setItem('token', response.data.token);
-            this.logInUser()
+            this.logInUser(userPasses.mail,response.data.token)
         }).catch(error => {
             const response = get(error.response, 'data', '');
-            this.setState({ leftPanel: this.changeLeftPanelState('error'), errorMessage: response.message })
+            this.setState({ leftPanel: changeLeftPanelState('error'), errorMessage: response.message })
         });
     }
 
     setLeftPanel() {
         const { register, login, loading, error } = this.state.leftPanel;
-
         if (loading) {
             return (
                 <div className='col-lg-5 offset-lg-1 col-12 d-flex justify-content-center align-items-center'>
@@ -132,13 +127,13 @@ export default class HomePage extends React.Component<{}, HomeState> {
         } else {
             return (
                 <React.Fragment>
-                    <StyledButton onClick={() => this.setState({ leftPanel: this.changeLeftPanelState('login') })}>
+                    <StyledButton onClick={() => this.setState({ leftPanel: changeLeftPanelState('login') })}>
                         Sign in
                         <span className="glyph-wrapper">
                             <FaSignInAlt />
                         </span>
                     </StyledButton>
-                    <StyledButton onClick={() => this.setState({ leftPanel: this.changeLeftPanelState('register') })}>
+                    <StyledButton onClick={() => this.setState({ leftPanel: changeLeftPanelState('register') })}>
                         Sign up
                         <span className="glyph-wrapper">
                             <FaUserPlus />

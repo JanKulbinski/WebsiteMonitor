@@ -14,7 +14,6 @@ from app import mysql
 @monitors.route("/page-to-monitor", methods=['GET'])
 @cross_origin()
 def save_whole_page():
-    print(decode_token(request.headers.get('Authorization')))
     user_mail = decode_token(request.headers.get('Authorization')).get('identity')
     if(not user_mail):
         abort(make_response(jsonify(message="Session expired"), 401))
