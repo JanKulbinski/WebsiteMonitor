@@ -104,7 +104,8 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
     }
 
     handleSubmitClick = (monitor: Monitor) => {
-        console.log({monitor})
+        const {iFrameInput, index, tag} = this.state;
+        console.log({...monitor, tag:tag, index:index, url: iFrameInput})
     }
 
     render() {
