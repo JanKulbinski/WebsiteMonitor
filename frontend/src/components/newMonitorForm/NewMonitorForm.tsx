@@ -50,7 +50,8 @@ const emptyMonitor = {
     intervalMinutes: 1440,
     mailNotification: false,
     browserNotification: false,
-    mail: localStorage.getItem('mail') || ''
+    mail: localStorage.getItem('mail') || '',
+    url:''
 
 }
 

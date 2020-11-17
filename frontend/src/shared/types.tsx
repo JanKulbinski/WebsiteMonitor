@@ -28,4 +28,5 @@ export interface Monitor {
     mailNotification: boolean,                 
     browserNotification: boolean,
     mail: string,
+    url: string
 }

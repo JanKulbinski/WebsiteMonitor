@@ -19,9 +19,9 @@ type NewMonitorState = {
     isFrameLoaded: boolean;
     form: {
         inputWebsite: string;
-    },
+    };
     tag: string;
-    index: string;
+    index: number;
 }
 
 const GoButton = styled(StyledButton)`
@@ -41,7 +41,7 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
                 inputWebsite: '',
             },
             tag: '',
-            index: ''
+            index: 0
         }
     }
 
@@ -105,7 +105,7 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
 
     handleSubmitClick = (monitor: Monitor) => {
         const {iFrameInput, index, tag} = this.state;
-        console.log({...monitor, tag:tag, index:index, url: iFrameInput})
+        return monitorService.createMonitor({...monitor, choosenElement:{tag:tag, index:index}, url: iFrameInput});
     }
 
     render() {

@@ -34,6 +34,24 @@ def save_whole_page():
     webpage_path = constants.SERVER_URL + re.search("static.*", wp.file_path).group().replace('//', '/')
     return jsonify({'location': webpage_path})  
 
+@monitors.route("/create-monitor", methods=['POST'])
+@cross_origin()
+def create_monitor():
+    user_mail = decode_token(request.headers.get('Authorization')).get('identity')
+    if(not user_mail):
+        abort(make_response(jsonify(message="Session expired"), 401))
+
+    data = request.get_json()
+    print(data)
+
+    # 0. otworz io socket
+    # 1. wystartuj scheduled task 
+    # 2. zapisz do bazy
+    
+    return jsonify({'ok': 'ok'})  
+
+
+
 def download_html(adress):
     session = HTMLSession()
     page = session.get('adress')

@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { API_URL } from '../constants';
+import { Monitor } from '../shared/types';
 
 
 export const monitorService = {
-    getPageToMonitor
+    getPageToMonitor,
+    createMonitor
 };
 
 const getHeaders = () => {
@@ -22,4 +24,13 @@ function getPageToMonitor(webpageAdress: string) {
             adress: webpageAdress
         }
       });
+}
+
+function createMonitor(monitor: Monitor) {
+    const headers = { headers: getHeaders() }
+    
+    return axios.post(`${API_URL}${prefix}/create-monitor`, {
+        ...monitor
+    },
+    headers)
 }
