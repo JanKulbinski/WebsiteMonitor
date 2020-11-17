@@ -1,6 +1,6 @@
-import React, { ChangeEvent, MouseEvent, useState } from 'react';
-import { FaArrowDown, FaUserShield, FaTimes } from 'react-icons/fa';
-import { UserPasses, User, Monitor } from '../../shared/types';
+import React, { ChangeEvent, useState } from 'react';
+import { FaArrowDown } from 'react-icons/fa';
+import { Monitor } from '../../shared/types';
 import Datetime from "react-datetime";
 import styled from 'styled-components';
 import { StyledButton } from '../../shared/BasicElements';
@@ -22,9 +22,8 @@ const Label = styled.label`
     margin-left: 20px;
 `
 const Input = styled.input`
-display: block;
 height: calc(1.5em + .75rem + 2px);
-padding: .375rem .75rem;
+padding: .375rem .75rem !important;
 font-size: 1rem;
 font-weight: 400;
 line-height: 1.5;

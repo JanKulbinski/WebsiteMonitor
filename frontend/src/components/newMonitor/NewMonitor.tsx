@@ -14,6 +14,7 @@ import { NewMonitorForm } from '../newMonitorForm/NewMonitorForm';
 
 type NewMonitorState = {
     iFrameUrl: string;
+    iFrameInput: string;
     isFrameLoading: boolean;
     isFrameLoaded: boolean;
     form: {
@@ -33,6 +34,7 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
         super(props);
         this.state = {
             iFrameUrl: '',
+            iFrameInput: '',
             isFrameLoading: false,
             isFrameLoaded: false,
             form: {
@@ -57,7 +59,7 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
     }
 
     handleGo = () => {
-        monitorService.getPageToMonitor(this.state.iFrameUrl).then(response => {
+        monitorService.getPageToMonitor(this.state.iFrameInput).then(response => {
             const data = get(response, 'data', '');
             const url = data ? data.location : '';
             this.setState({ iFrameUrl: url, isFrameLoading: false, isFrameLoaded: true })
@@ -115,7 +117,7 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
                     <div className='inhalt'>
                         <h1>Create new monitor</h1>
                         <div className='url-wrapper'>
-                            <input type='text' placeholder='Enter Website...' name='iFrameUrl' onChange={(e) => this.handleValueChange(e)}></input>
+                            <input type='text' placeholder='Enter Website...' name='iFrameInput' onChange={(e) => this.handleValueChange(e)}></input>
                             <GoButton onClick={this.handleGo}>GO</GoButton>
                         </div>
                         {this.state.isFrameLoaded &&
