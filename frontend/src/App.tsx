@@ -10,6 +10,7 @@ import AllMonitors from './components/allMonitors/AllMonitors';
 import HomePage from './components/homePage/HomePage'
 import Page404 from './components/Page404'
 import "react-datetime/css/react-datetime.css";
+import Room from './components/room.tsx/Room';
 
 function App() {
   return (
@@ -23,6 +24,9 @@ function App() {
           </Route>
           <Route exact path="/all-monitors">
             <AllMonitors/>
+          </Route>
+          <Route path="/room/:id">
+            <Room/>
           </Route>
           <Route>
             <Page404/>

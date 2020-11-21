@@ -16,9 +16,12 @@ mysql = MySQL(app)
 
 # configure routes
 from blueprints.authentication import auth
-from blueprints.monitors import monitors
+from blueprints.monitors import monitors, init_workers
 app.register_blueprint(auth)
 app.register_blueprint(monitors)
 
 if __name__ == '__main__':
     app.run(debug=True)
+    init_workers()
+    # TO DO 
+    # gdy apka wstaje niech startuje wszystki workerow z bazy danych

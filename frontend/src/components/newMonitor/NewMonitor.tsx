@@ -10,6 +10,7 @@ import get from 'lodash/get';
 import { FaCloud } from 'react-icons/fa';
 import Loader from 'react-loader-spinner'
 import { NewMonitorForm } from '../newMonitorForm/NewMonitorForm';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
 
 
 type NewMonitorState = {
@@ -28,15 +29,15 @@ const GoButton = styled(StyledButton)`
     width:15%;
 `
 
-export default class NewMonitor extends React.Component<{}, NewMonitorState> {
+class NewMonitor extends React.Component<RouteComponentProps, NewMonitorState> {
 
-    constructor(props: {}) {
+    constructor(props: RouteComponentProps) {
         super(props);
         this.state = {
             iFrameUrl: '',
             iFrameInput: '',
             isFrameLoading: false,
-            isFrameLoaded: false,
+            isFrameLoaded: true,
             form: {
                 inputWebsite: '',
             },
@@ -59,14 +60,14 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
     }
 
     handleGo = () => {
-        monitorService.getPageToMonitor(this.state.iFrameInput).then(response => {
+       monitorService.getPageToMonitor(this.state.iFrameInput).then(response => {
             const data = get(response, 'data', '');
             const url = data ? data.location : '';
             this.setState({ iFrameUrl: url, isFrameLoading: false, isFrameLoaded: true })
         }).catch(error => {
             const response = get(error.response, 'data', '');
-            alert(response.message)
-            console.log(response);
+            alert(response.msg)
+            console.log(response.msg);
         });
         this.setState({ isFrameLoading: true })
     }
@@ -105,7 +106,21 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
 
     handleSubmitClick = (monitor: Monitor) => {
         const {iFrameInput, index, tag} = this.state;
-        return monitorService.createMonitor({...monitor, choosenElement:{tag:tag, index:index}, url: iFrameInput});
+
+        monitorService.createMonitor({...monitor, url:iFrameInput, choosenElement:{tag:tag ? tag : 'default', index:index}})
+            .then(res => {
+                const data = get(res, 'data', '');
+                const roomId = data ? data.roomId : '';
+                this.props.history.push({
+                    pathname: `room/:${roomId}`
+                });
+            })
+            .catch(error => {
+                const response = get(error.response, 'data', '');
+                alert(response.msg)
+                console.log(response.msg);
+            });
+
     }
 
     render() {
@@ -133,3 +148,5 @@ export default class NewMonitor extends React.Component<{}, NewMonitorState> {
         );
     }
 }
+
+export default withRouter(NewMonitor);

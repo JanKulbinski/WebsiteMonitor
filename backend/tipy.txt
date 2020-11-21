@@ -11,3 +11,7 @@ wyjście z virtual env:
 
 wejscie do virtual env:
     venv\scripts\activate
+
+
+Download windowse headless !!! 
+on my windows: 

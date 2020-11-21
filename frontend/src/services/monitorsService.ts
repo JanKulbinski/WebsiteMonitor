@@ -5,7 +5,9 @@ import { Monitor } from '../shared/types';
 
 export const monitorService = {
     getPageToMonitor,
-    createMonitor
+    createMonitor,
+    getMonitor,
+    getScan
 };
 
 const getHeaders = () => {
@@ -33,4 +35,22 @@ function createMonitor(monitor: Monitor) {
         ...monitor
     },
     headers)
+}
+
+function getMonitor(monitorId: string) {
+    return axios.get(`${API_URL}${prefix}/get-monitor`, {
+        headers: getHeaders(), 
+        params: {
+            monitorId: monitorId
+        }
+      });
+}
+
+function getScan(monitorId: string) {
+    return axios.get(`${API_URL}${prefix}/get-scan`, {
+        headers: getHeaders(), 
+        params: {
+            monitorId: monitorId
+        }
+      });
 }

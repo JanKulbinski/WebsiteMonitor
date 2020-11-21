@@ -48,8 +48,8 @@ const emptyMonitor = {
     },
     keyWords: '',
     intervalMinutes: 1440,
-    mailNotification: false,
-    browserNotification: false,
+    textChange: false,
+    allFilesChange: false,
     mail: localStorage.getItem('mail') || '',
     url:''
 
@@ -73,10 +73,10 @@ export function NewMonitorForm({ onSubmitClick }: monitorProps) {
 
     const handleOnChangeCheckbox = (event: ChangeEvent<HTMLInputElement>) => {
         const { name } = event.target;
-        name === 'mailNotification' ? 
-            setMonitorValue({ ...monitorValue, mailNotification: !monitorValue.mailNotification })
+        name === 'textChange' ? 
+            setMonitorValue({ ...monitorValue, textChange: !monitorValue.textChange })
         :
-            setMonitorValue({ ...monitorValue, browserNotification: !monitorValue.browserNotification })
+            setMonitorValue({ ...monitorValue, allFilesChange: !monitorValue.allFilesChange })
     }
 
     const handleSubmit = () => {
@@ -113,11 +113,11 @@ export function NewMonitorForm({ onSubmitClick }: monitorProps) {
                     <Label className='col-lg-1 col-12 ' >Key words</Label>
                     <Input className='input-text col-lg-3 col-12 ' type="text" onChange={handleValueChange} placeholder="Word 1; Word 2;   . . . " name="keyWords" required />
                 
-                    <Label className='col-lg-2 col-12' >Browser notification</Label>
+                    <Label className='col-lg-2 col-12' >All files change</Label>
                     <input className='col-lg-1 col-12'
                         type="checkbox"
-                        name='browserNotification'
-                        defaultChecked={monitorValue.browserNotification}
+                        name='allFilesChange'
+                        defaultChecked={monitorValue.allFilesChange}
                         onChange={handleOnChangeCheckbox}
                     />
                 </div>
@@ -128,11 +128,11 @@ export function NewMonitorForm({ onSubmitClick }: monitorProps) {
                     <Label className='col-lg-1 col-12' >Mail</Label>
                     <Input className='input-text col-lg-3 col-12' type="text" onChange={handleValueChange} placeholder="Enter mail" value={monitorValue.mail} name="mail" required />
                     
-                    <Label className='col-lg-2 col-12' >Mail notification</Label>
+                    <Label className='col-lg-2 col-12' >Text change</Label>
                     <input className='col-lg-1 col-12'
                         type="checkbox"
-                        name='mailNotification'
-                        defaultChecked={monitorValue.mailNotification}
+                        name='textChange'
+                        defaultChecked={monitorValue.textChange}
                         onChange={handleOnChangeCheckbox}
                     />
                 </div>

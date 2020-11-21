@@ -25,8 +25,8 @@ export interface Monitor {
     },
     keyWords: string,
     intervalMinutes: number,
-    mailNotification: boolean,                 
-    browserNotification: boolean,
+    textChange: boolean,
+    allFilesChange: boolean,
     mail: string,
     url: string
 }

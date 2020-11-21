@@ -1,0 +1,12 @@
+.room {
+    header {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    .manageWrapper {
+        display: flex;
+        justify-content: flex-end;
+        padding: 10px 40px;
+    }
+}
