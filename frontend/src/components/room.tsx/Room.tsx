@@ -41,6 +41,8 @@ const emptyMonitor = {
 
 class Room extends React.Component<PropsType, RoomState> {
 
+    private intervalPing = 0;
+
     constructor(props: PropsType) {
         super(props);
         this.state = {
@@ -69,11 +71,15 @@ class Room extends React.Component<PropsType, RoomState> {
             });
     }
 
+    componentWillUnmount() {
+        clearInterval(this.intervalPing);
+    }
+
     setIntervalApiPing(intervalMinutes:number, start:string, end:string, monitorId:string) {
         const startDate = Date.parse(start);
         const endDate = Date.parse(end);
         const miliseconds = intervalMinutes * 60 * 1000
-        setInterval(() => {
+        this.intervalPing = setInterval(() => {
             const now = Date.now()
             console.log({startDate, endDate, miliseconds, comp:(now > startDate && now < endDate)})
             if(now > startDate && now < endDate) {

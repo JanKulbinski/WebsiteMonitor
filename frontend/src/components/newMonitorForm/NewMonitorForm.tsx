@@ -64,11 +64,11 @@ export function NewMonitorForm({ onSubmitClick }: monitorProps) {
     }
 
     const handleOnChangeStartDate = (date: any) => {
-        setMonitorValue({ ...monitorValue, start: date.format("YYYY-MM-DD hh:mm:ss") });
+        setMonitorValue({ ...monitorValue, start: date.format("YYYY-MM-DD HH:mm:ss") });
     }
 
     const handleOnChangeEndDate = (date: any) => {
-        setMonitorValue({ ...monitorValue, end: date.format("YYYY-MM-DD hh:mm:ss") });
+        setMonitorValue({ ...monitorValue, end: date.format("YYYY-MM-DD HH:mm:ss") });
     }
 
     const handleOnChangeCheckbox = (event: ChangeEvent<HTMLInputElement>) => {
@@ -108,7 +108,7 @@ export function NewMonitorForm({ onSubmitClick }: monitorProps) {
             <div className='d-flex-column justify-content-center align-items-baseline '>
                 <div className="row align-items-baseline py-2">
                     <Label className='col-lg-1 col-12' >Start time</Label>
-                    <Datetime className='col-lg-2 col-12' onChange={handleOnChangeStartDate} />
+                    <Datetime className='col-lg-2 col-12' onChange={handleOnChangeStartDate} timeFormat="HH:mm:ss"/>
 
                     <Label className='col-lg-1 col-12 ' >Key words</Label>
                     <Input className='input-text col-lg-3 col-12 ' type="text" onChange={handleValueChange} placeholder="Word 1; Word 2;   . . . " name="keyWords" required />
@@ -123,7 +123,7 @@ export function NewMonitorForm({ onSubmitClick }: monitorProps) {
                 </div>
                 <div className="row align-items-baseline py-2 ">
                     <Label className='col-lg-1 col-12'>End time</Label>
-                    <Datetime className='col-lg-2 col-12' onChange={handleOnChangeEndDate} />
+                    <Datetime className='col-lg-2 col-12' onChange={handleOnChangeEndDate} timeFormat="HH:mm:ss"/>
 
                     <Label className='col-lg-1 col-12' >Mail</Label>
                     <Input className='input-text col-lg-3 col-12' type="text" onChange={handleValueChange} placeholder="Enter mail" value={monitorValue.mail} name="mail" required />

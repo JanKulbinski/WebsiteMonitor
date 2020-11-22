@@ -1,4 +1,6 @@
 PATH_TO_SAVE_STATIC = r'C:\Users\janku\OneDrive\WebsiteMonitor\backend'
+PATH_TO_SAVE_DIFFS = r'C:\Users\janku\OneDrive\WebsiteMonitor\backend\diffs'
+PATH_TO_SAVE_OlD_HTMLS = r'C:\Users\janku\OneDrive\WebsiteMonitor\backend\old-htmls'
 
 SERVER_URL = 'http://localhost:5000/'
 FRONT_DOMAIN_URL = 'http://localhost:3000/'
