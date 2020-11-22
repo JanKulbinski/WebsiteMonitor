@@ -40,10 +40,11 @@ class Scheduler:
 ]
 
     def run(self):
-        job_thread = threading.Thread(target=self.work)
-        job_thread.start()
+        self.job_thread = threading.Thread(target=self.work)
+        self.job_thread.start()
 
     def work(self):
+        time.sleep(30)
         options = Options()
         options.headless = True
         driver = webdriver.Chrome(executable_path=r'C:\Program Files (x86)\Google\chromeDriver\chromedriver.exe', chrome_options=options)

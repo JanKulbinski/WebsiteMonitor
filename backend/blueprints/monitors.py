@@ -8,6 +8,7 @@ import constants
 import uuid
 from webpage_controller import Scheduler
 from bs4 import BeautifulSoup
+import shutil
 
 monitors = Blueprint('monitors', __name__, url_prefix='/monitors')
 from app import mysql
@@ -70,11 +71,13 @@ def create_monitor():
     cursor.execute('INSERT INTO monitors (id, url, choosenElements, keyWords, intervalMinutes, start, end, textChange, allFilesChange, author) VALUES (%s,%s, %s, %s, %s, %s, %s, %s, %s, %s)',(room_id, url, choosenElement, keyWords, intervalMinutes, start, end, textChange, allFilesChange, author))
     mysql.connection.commit()
 
+    delete_folder(url)
+
     worker = Scheduler(room_id, start, end, tag, index, keyWords, intervalMinutes, textChange, allFilesChange, author, url)
     workers[room_id] = worker
     worker.run()
-
-    return jsonify({'roomId': room_id}) 
+    
+    return jsonify({'roomId': room_id})
 
 
 @monitors.route("/get-monitor", methods=['GET'])
@@ -108,12 +111,19 @@ def get_scan():
     print('HIT')
     return jsonify({'monitor_id': monitor_id})
 
-#def monitor_page(room_id):
-    #from app import scheduler
-    #scheduler.schedule_page_controll(room_id)
 
-
+def delete_folder(url):
+    url = url.replace('https://', '')
+    url = url.replace('http://', '')
+    if url[-1] == '/':
+        url = url[:-1]
+    prefix = r'\static'
+    url = f'{constants.PATH_TO_SAVE_STATIC}{prefix}\{url}'
     
+    shutil.rmtree(url)
+    print(f'{url} removed.')
+
+
 def add_script_to_html(file_path):
     soup = BeautifulSoup(open(file_path), 'html.parser')
     script_element = soup.new_tag('script')
@@ -123,6 +133,8 @@ def add_script_to_html(file_path):
     with open(file_path, 'w',  encoding='utf8') as file:
         file.write(str(soup))
 
+
+#################################################33
 def getNthElement():
     soup = BeautifulSoup(open(r'C:\Users\janku\OneDrive\WebsiteMonitor\backend\static\www.lfc.pl\www.lfc.pl\index.html'), "html.parser")
     divs = soup.body.find_all("a")
