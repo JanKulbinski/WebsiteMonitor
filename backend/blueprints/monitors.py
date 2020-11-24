@@ -19,7 +19,6 @@ def init_workers():
     #polacz sie z baza odpal wszystkich workerow
     print(workers)
 
-# gdy folder juz istnieje to strona nie jest sciagana, bedzie trzeba ja sciagac do temp
 @monitors.route("/page-to-monitor", methods=['GET'])
 @cross_origin()
 def save_whole_page():
@@ -115,6 +114,11 @@ def get_scan():
 def delete_folder(url):
     url = url.replace('https://', '')
     url = url.replace('http://', '')
+    url = url.replace('/', '//')
+    prefix = re.search("[^/]*/", url)
+    if prefix:
+        url = prefix.group()
+
     if url[-1] == '/':
         url = url[:-1]
     prefix = r'\static'
@@ -133,14 +137,3 @@ def add_script_to_html(file_path):
     with open(file_path, 'w',  encoding='utf8') as file:
         file.write(str(soup))
 
-
-#################################################33
-def getNthElement():
-    soup = BeautifulSoup(open(r'C:\Users\janku\OneDrive\WebsiteMonitor\backend\static\www.lfc.pl\www.lfc.pl\index.html'), "html.parser")
-    divs = soup.body.find_all("a")
-    for index, value in enumerate(divs):
-        if (index == (213 - 1)):
-            print(value.text)
-
-#addScriptToHtml()
-#getNthElement()

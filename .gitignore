@@ -11,6 +11,7 @@ backend/venv/
 backend/static
 backend/old-htmls
 backend/blueprints/__pycache__/
+backend/debug.log
 
 # FRONTEND
 frontend/node_modules/
