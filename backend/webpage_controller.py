@@ -3,8 +3,10 @@ from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 from constants import PATH_TO_SAVE_OlD_HTMLS, PATH_TO_SAVE_DIFFS, PATH_TO_HEADLESS_WEB_BROWSER
-from data_base import insert_scan
-
+from data_base import insert_scan, find_file, insert_file
+from datetime import datetime, timedelta
+from monitors_helpers import download_whole_page, get_project_path
+from enums import FileStatus
 import os
 import asyncio
 import schedule
@@ -13,8 +15,9 @@ import threading
 import re
 import difflib
 import filecmp
-from datetime import datetime, timedelta
-
+import hashlib
+import constants
+import glob 
 
 def tag_visible(element):
     if element.parent.name in ['[document]', 'noscript', 'header', 'html', 'meta', 'head', 'input', 'script', 'style']:
@@ -121,4 +124,36 @@ class Scheduler:
                 return element.text
 
     def compare_all_files(self):
-        print('all files')
+        download_whole_page(self.url)
+        project_path = get_project_path(self.url)
+
+        if not self.textChange:
+            insert_scan(self.scanId, self.room_id, False)
+
+        files = glob.glob(f'{project_path}/**/*', recursive=True) 
+        for file_name in files:
+            if os.path.isdir(file_name):
+                continue
+            new_hash = self.generate_hash(file_name)
+            
+            if self.scanId:
+                old_file = find_file(file_name, self.scanId - 1, self.room_id)                 
+                status = FileStatus.OLD.value
+                if not old_file:
+                    status = FileStatus.NEW.value
+                elif old_file['fileHash'] != new_hash:
+                    status = FileStatus.MODIFIED.value
+                insert_file(self.scanId, self.room_id, new_hash, file_name, status)
+            else:
+                insert_file(self.scanId, self.room_id, new_hash, file_name, FileStatus.NEW.value)
+        
+        delete_folder(self.url)
+
+
+
+    def generate_hash(self, file_name):                   
+        with open(file_name, "rb") as f:
+            file_hash = hashlib.blake2b(digest_size=32)
+            while chunk := f.read(8192):
+                file_hash.update(chunk)
+        return file_hash.digest()

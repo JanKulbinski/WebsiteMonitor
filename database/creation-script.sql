@@ -53,7 +53,8 @@ CREATE TABLE files
   scanId            INT unsigned NOT NULL,
   monitorId         VARCHAR(32) NOT NULL,
   fileHash          VARBINARY(32) NOT NULL,                 
-  fileName			VARCHAR(255) NOT NULL,	
+  fileName			VARCHAR(255) NOT NULL,
+  fileStatus        VARCHAR(15) NOT NULL,
   FOREIGN KEY 	    (scanId, monitorId)
 	REFERENCES      scans(id, monitorId)
     ON DELETE CASCADE,

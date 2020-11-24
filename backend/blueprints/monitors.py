@@ -3,12 +3,13 @@ from monitors_helpers import download_whole_page, add_script_to_html, delete_fol
 from requests_html import HTMLSession
 from flask_cors import cross_origin
 from flask_jwt_extended import decode_token
-from constants import SERVER_URL
+from constants import SERVER_URL, PATH_TO_SAVE_DIFFS
 import uuid
 import re
+from enums import FileStatus
 
 monitors = Blueprint('monitors', __name__, url_prefix='/monitors')
-from data_base import insert_monitor, find_monitor
+from data_base import insert_monitor, find_monitor, find_scan, find_deleted_files, find_changed_files
 from webpage_controller import Scheduler
 
 
@@ -81,14 +82,23 @@ def get_monitor():
 @monitors.route("/get-scan", methods=['GET'])
 @cross_origin()
 def get_scan():
-    monitor_id = request.args.get('monitorId')
-    #cursor = mysql.connection.cursor()
-    #cursor.execute('SELECT * FROM monitors WHERE id = %s', (monitor_id,))
-    #monitor = cursor.fetchone()
-    #if not monitor:
-        #abort(make_response(jsonify(message='Monitor dosen\'t exist'), 404))
-    #else:
-        #index, tag = monitor['choosenElements'].split()
-        #monitor['choosenElements'] = {index: index, tag: tag}
     print('HIT')
-    return jsonify({'monitor_id': monitor_id})
+    monitor_id = request.args.get('monitorId')
+    scan_id = request.args.get('scanId')
+
+    monitor = find_monitor(monitor_id)
+    if not monitor:
+        abort(make_response(jsonify(message='Scan dosen\'t exist'), 404))
+
+    result = {}
+    if monitor['textChange']:
+        isDiffrence = find_scan(monitor_id, scan_id)['isDiffrence']
+        if isDiffrence:
+            result['raport_path'] = f'{PATH_TO_SAVE_DIFFS}\{monitor_id}-{scan_id}.html'
+
+    if monitor['allFilesChange']:
+        result['new_files'] = find_changed_files(monitor_id, scan_id, FileStatus.NEW.value)
+        result['changed_files'] = find_changed_files(monitor_id, scan_id, FileStatus.MODIFIED.value)
+        result['deleted_files'] = find_deleted_files(monitor_id, scan_id)
+
+    return jsonify(result)

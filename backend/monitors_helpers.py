@@ -5,7 +5,7 @@ import shutil
 import re
 
 
-def delete_folder(url):
+def get_project_path(url):
     url = url.replace('https://', '')
     url = url.replace('http://', '')
     url = url.replace('/', '//')
@@ -17,7 +17,10 @@ def delete_folder(url):
         url = url[:-1]
     prefix = r'\static'
     url = f'{constants.PATH_TO_SAVE_STATIC}{prefix}\{url}'
-    
+    return url
+
+def delete_folder(url):
+    url = get_project_path(url)
     shutil.rmtree(url)
     print(f'{url} removed.')
 
