@@ -39,33 +39,25 @@ VALUES ('test123', 'www.lfc.pl', '60', '2020-06-18 10:34:09', '2020-06-19 12:35:
 
 CREATE TABLE scans
 (
-  id               INT unsigned NOT NULL AUTO_INCREMENT,
+  id               INT unsigned NOT NULL,
   monitorId        VARCHAR(32) NOT NULL,
-  content          TEXT,
-  diffrence 	   TEXT,
+  isDiffrence 	   BOOLEAN default FALSE,
   FOREIGN KEY 	   (monitorId)
 	REFERENCES     monitors(id)
     ON DELETE CASCADE,
-  PRIMARY KEY 		(id)  
+  PRIMARY KEY 		(id, monitorId)  
 );
 
-INSERT INTO scans (monitorId, content, diffrence)
-VALUES ('test123', '<!DOCTYPE html>
-<html>
-    <head>
-        <!-- head definitions go here -->
-    </head>
-    <body>
-        <!-- the content goes here -->
-    </body>
-</html>', '<!DOCTYPE html>
-<html>
-    <head>
-        <!-- head definitions go here -->
-    </head>
-    <body>
-        <!-- the content goes here -->
-    </body>monitorsmonitors
-</html>');
+CREATE TABLE files
+(
+  scanId            INT unsigned NOT NULL,
+  monitorId         VARCHAR(32) NOT NULL,
+  fileHash          VARBINARY(32) NOT NULL,                 
+  fileName			VARCHAR(255) NOT NULL,	
+  FOREIGN KEY 	    (scanId, monitorId)
+	REFERENCES      scans(id, monitorId)
+    ON DELETE CASCADE,
+  PRIMARY KEY 		(scanId, monitorId, fileName)  
+);
 
 SHOW TABLES;

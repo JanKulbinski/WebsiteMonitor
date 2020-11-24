@@ -12,23 +12,9 @@ import hashlib
 import os
 import random 
 
+
 auth = Blueprint('authentication', __name__)
-from app import mysql
-
-
-@auth.route("/health-check", methods=['GET'])
-@cross_origin()
-def healthCheck():
-    if session.get('logged_in') == True:
-        return jsonify(session.get('mail'))   
-    abort(make_response(jsonify(message='Not logged in'), 401))
-
-@auth.route("/all-users", methods=['GET'])
-@cross_origin()
-def get_users():
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM users")
-    return f'{cur.fetchall()}'
+from data_base import find_user, find_salt, check_user, insert_user
 
 @auth.route("/login", methods=['POST'])
 @cross_origin()
@@ -40,19 +26,14 @@ def login():
     mail = data['mail']
     password = data['password']
 
-    cursor = mysql.connection.cursor()
-    cursor.execute('SELECT salt FROM users WHERE mail = %s', (mail,))
-    userBymail = cursor.fetchone()
-
+    userBymail = find_salt(mail)
     if userBymail:
         salt = userBymail['salt']
         password_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000, dklen=128)
+        user = check_user(mail, password_hash)
 
-        cursor.execute('SELECT * FROM users WHERE mail = %s AND password = %s', (mail, password_hash,))
-        user = cursor.fetchone()
-        
         if user:
-            expires = timedelta(minutes=20)
+            expires = timedelta(hours=20) # TODO: change for minutes 
             access_token = create_access_token(identity=mail, expires_delta=expires)
             return jsonify({'message': 'Successfully logged in', 'token': access_token})
 
@@ -75,10 +56,7 @@ def register():
     password = data['password']
     mail = data['mail']
 
-    cursor = mysql.connection.cursor()
-    cursor.execute('SELECT * FROM users WHERE mail = %s', (mail,))
-    user = cursor.fetchone()
-    
+    user = find_user(mail)    
     if user:
         abort(make_response(jsonify(message='Account already exists'), 409))
     elif not re.match(r'[^@]+@[^@]+\.[^@]+', mail):
@@ -97,9 +75,7 @@ def register():
             dklen=128 # Get a 128 byte key
         ) 
         
-        cursor.execute('INSERT INTO users VALUES (%s, %s, %s, %s, %s)', (mail, name, surname, salt, key,))
-        mysql.connection.commit()
-        
+        insert_user(mail, name, surname, salt, key)
         expires = timedelta(minutes=20)
         access_token = create_access_token(identity=mail, expires_delta=expires)
         

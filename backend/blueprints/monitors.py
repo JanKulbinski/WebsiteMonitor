@@ -1,17 +1,16 @@
 from flask import Blueprint, request, session, jsonify, abort, make_response, send_from_directory
+from monitors_helpers import download_whole_page, add_script_to_html, delete_folder
 from requests_html import HTMLSession
 from flask_cors import cross_origin
 from flask_jwt_extended import decode_token
-from pywebcopy import WebPage, config
-import re
-import constants
+from constants import SERVER_URL
 import uuid
-from webpage_controller import Scheduler
-from bs4 import BeautifulSoup
-import shutil
+import re
 
 monitors = Blueprint('monitors', __name__, url_prefix='/monitors')
-from app import mysql
+from data_base import insert_monitor, find_monitor
+from webpage_controller import Scheduler
+
 
 workers = {}
 
@@ -27,19 +26,10 @@ def save_whole_page():
         abort(make_response(jsonify(message="Session expired"), 401))
 
     adress = request.args.get('adress')
-    config.setup_config(adress, 'static')
+    html = download_whole_page(adress)
+    add_script_to_html(html)
 
-    wp = WebPage()
-    wp.get(adress)
-
-    wp.save_complete()
-    timeout = 1
-    for t in wp._threads: # blocks the calling thread until the thread whose join() method is called is terminated.
-        if t.is_alive():
-           t.join(timeout)
-
-    add_script_to_html(wp.file_path)
-    webpage_path = constants.SERVER_URL + re.search("static.*", wp.file_path).group().replace('//', '/')
+    webpage_path = SERVER_URL + re.search("static.*", html).group().replace('//', '/')
     return jsonify({'location': webpage_path})  
 
 @monitors.route("/create-monitor", methods=['POST'])
@@ -66,10 +56,7 @@ def create_monitor():
     url = data['url']
     room_id = uuid.uuid4().hex
 
-    cursor = mysql.connection.cursor()
-    cursor.execute('INSERT INTO monitors (id, url, choosenElements, keyWords, intervalMinutes, start, end, textChange, allFilesChange, author) VALUES (%s,%s, %s, %s, %s, %s, %s, %s, %s, %s)',(room_id, url, choosenElement, keyWords, intervalMinutes, start, end, textChange, allFilesChange, author))
-    mysql.connection.commit()
-
+    insert_monitor(room_id, url, choosenElement, keyWords, intervalMinutes, start, end, textChange, allFilesChange, author)
     delete_folder(url)
 
     worker = Scheduler(room_id, start, end, tag, index, keyWords, intervalMinutes, textChange, allFilesChange, author, url)
@@ -78,14 +65,11 @@ def create_monitor():
     
     return jsonify({'roomId': room_id})
 
-
 @monitors.route("/get-monitor", methods=['GET'])
 @cross_origin()
 def get_monitor():
     monitor_id = request.args.get('monitorId')
-    cursor = mysql.connection.cursor()
-    cursor.execute('SELECT * FROM monitors WHERE id = %s', (monitor_id,))
-    monitor = cursor.fetchone()
+    monitor = find_monitor(monitor_id)
     if not monitor:
         abort(make_response(jsonify(message='Monitor dosen\'t exist'), 404))
     else:
@@ -93,7 +77,6 @@ def get_monitor():
         monitor['choosenElements'] = {index: index, tag: tag}
 
         return jsonify({'monitor': monitor})
-
 
 @monitors.route("/get-scan", methods=['GET'])
 @cross_origin()
@@ -109,31 +92,3 @@ def get_scan():
         #monitor['choosenElements'] = {index: index, tag: tag}
     print('HIT')
     return jsonify({'monitor_id': monitor_id})
-
-
-def delete_folder(url):
-    url = url.replace('https://', '')
-    url = url.replace('http://', '')
-    url = url.replace('/', '//')
-    prefix = re.search("[^/]*/", url)
-    if prefix:
-        url = prefix.group()
-
-    if url[-1] == '/':
-        url = url[:-1]
-    prefix = r'\static'
-    url = f'{constants.PATH_TO_SAVE_STATIC}{prefix}\{url}'
-    
-    shutil.rmtree(url)
-    print(f'{url} removed.')
-
-
-def add_script_to_html(file_path):
-    soup = BeautifulSoup(open(file_path), 'html.parser')
-    script_element = soup.new_tag('script')
-    script_element.attrs['type'] = 'text/javascript'
-    script_element.string = (constants.IFRAME_JS_SCRIPT)
-    soup.body.append(script_element)
-    with open(file_path, 'w',  encoding='utf8') as file:
-        file.write(str(soup))
-

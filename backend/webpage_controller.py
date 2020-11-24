@@ -3,6 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 from constants import PATH_TO_SAVE_OlD_HTMLS, PATH_TO_SAVE_DIFFS, PATH_TO_HEADLESS_WEB_BROWSER
+from data_base import insert_scan
 
 import os
 import asyncio
@@ -11,6 +12,7 @@ import time
 import threading
 import re
 import difflib
+import filecmp
 from datetime import datetime, timedelta
 
 
@@ -55,22 +57,21 @@ class Scheduler:
 
         while 1:
             now = datetime.timestamp(datetime.now())
-            if now >= self.end:
+            if now >= self.end or (not self.textChange and not self.allFilesChange):
                 print(f"MONITOR {self.room_id} has ended {datetime.now()}")
                 return
 
             if self.textChange:
                 self.download_and_save_text_from_html(driver)
                 if self.scanId:
-                    self.compare_text_and_generate_html()
-                    self.save_compare_results()
+                    is_diffrence = self.compare_text_and_generate_html()
+                    insert_scan(self.scanId, self.room_id, is_diffrence)
 
             if self.allFilesChange:
                 self.compare_all_files()
 
             self.scanId += 1
             time.sleep(self.intervalSeconds)
-
 
     def compare_text_and_generate_html(self):
         filepath_old = f'{PATH_TO_SAVE_OlD_HTMLS}\{self.room_id}-{self.scanId - 1}.txt'
@@ -84,10 +85,12 @@ class Scheduler:
         new_scan_name = datetime.now()
 
         diff = difflib.HtmlDiff(wrapcolumn=60).make_file(file_old, file_new, old_scan_name, new_scan_name)
-                    
+
         with open(diffspath, 'w') as out_file:
             out_file.write(diff)
 
+        is_diffrence = not filecmp.cmp(filepath_old, filepath)
+        return is_diffrence
 
     def download_and_save_text_from_html(self, driver):
         flag = self.scanId
@@ -111,17 +114,11 @@ class Scheduler:
         
         return filepath
 
-
     def get_nth_element_on_page(self, soup):
         all_tags = soup.body.find_all(self.tag)
         for i, element in enumerate(all_tags):
             if (i == (self.index - 1)):
                 return element.text
 
-
     def compare_all_files(self):
         print('all files')
-
-
-    def save_compare_results(self):
-        print('save')
