@@ -60,30 +60,33 @@ class Scheduler:
                 return
 
             if self.textChange:
-                filepath = self.download_and_save_text_from_html(driver)
-
+                self.download_and_save_text_from_html(driver)
                 if self.scanId:
-                    filepath_old = f'{PATH_TO_SAVE_OlD_HTMLS}\{self.room_id}-{self.scanId - 1}.txt'
-                    filepath = f'{PATH_TO_SAVE_OlD_HTMLS}\{self.room_id}-{self.scanId}.txt'
-                    diffspath = f'{PATH_TO_SAVE_DIFFS}\{self.room_id}-{self.scanId}.html'
-
-                    file_old = open(filepath_old, 'r').readlines()
-                    file_new = open(filepath, 'r').readlines()
-
-                    old_scan_name = datetime.now() - timedelta(seconds=self.intervalSeconds)
-                    new_scan_name = datetime.now()
-
-                    diff = difflib.HtmlDiff(wrapcolumn=60).make_file(file_old, file_new, old_scan_name, new_scan_name)
-                    
-                    with open(diffspath, 'w') as out_file:
-                        out_file.write(diff)
+                    self.compare_text_and_generate_html()
+                    self.save_compare_results()
 
             if self.allFilesChange:
-                print('all files change')
+                self.compare_all_files()
 
             self.scanId += 1
-
             time.sleep(self.intervalSeconds)
+
+
+    def compare_text_and_generate_html(self):
+        filepath_old = f'{PATH_TO_SAVE_OlD_HTMLS}\{self.room_id}-{self.scanId - 1}.txt'
+        filepath = f'{PATH_TO_SAVE_OlD_HTMLS}\{self.room_id}-{self.scanId}.txt'
+        diffspath = f'{PATH_TO_SAVE_DIFFS}\{self.room_id}-{self.scanId}.html'
+    
+        file_old = open(filepath_old, 'r').readlines()
+        file_new = open(filepath, 'r').readlines()
+
+        old_scan_name = datetime.now() - timedelta(seconds=self.intervalSeconds)
+        new_scan_name = datetime.now()
+
+        diff = difflib.HtmlDiff(wrapcolumn=60).make_file(file_old, file_new, old_scan_name, new_scan_name)
+                    
+        with open(diffspath, 'w') as out_file:
+            out_file.write(diff)
 
 
     def download_and_save_text_from_html(self, driver):
@@ -114,3 +117,11 @@ class Scheduler:
         for i, element in enumerate(all_tags):
             if (i == (self.index - 1)):
                 return element.text
+
+
+    def compare_all_files(self):
+        print('all files')
+
+
+    def save_compare_results(self):
+        print('save')
