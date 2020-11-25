@@ -9,4 +9,41 @@
         justify-content: flex-end;
         padding: 10px 40px;
     }
+    .cardsWrapper {
+        width: 90%;
+        margin: 20px auto;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            p {
+                color: black;
+                font-size: 1.5rem;
+            }
+        }
+        .h2-wrapper {
+            text-align: center;
+            color: black;
+        }
+        .body {
+            .title {
+                width: 100%;
+                border-bottom: solid 1px rgba(0, 0, 0, .125);
+            }
+            p,
+            b {
+                color: black;
+                font-size: 1.25rem;
+            }
+            .new {
+                color: rgb(49, 211, 49);
+            }
+            .deleted {
+                color: rgb(197, 37, 37);
+            }
+            .modified {
+                color: rgb(95, 95, 86);
+            }
+        }
+    }
 }

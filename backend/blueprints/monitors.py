@@ -94,13 +94,13 @@ def get_scan():
     if monitor['textChange']:
         scan = find_scan(monitor_id, scan_id)
         if not scan:
-            result['raport_path'] = f'noScan'
+            result['raportPath'] = f'noScan'
         else:
             result['isDiffrence'] = scan['isDiffrence']
             if scan['isDiffrence']:
                 raport_path_local = f'{PATH_TO_SAVE_DIFFS}\{monitor_id}-{scan_id}.html'
                 raport_path = SERVER_URL + re.search("static.*", raport_path_local).group().replace('//', '/')
-                result['raport_path'] = raport_path
+                result['raportPath'] = raport_path
         
         if scan and monitor['keyWords']:
             result['keyWordsOccurance'] = scan['keyWordsOccurance']
@@ -113,5 +113,4 @@ def get_scan():
     return jsonify(result)
 
 def cut_path_name(fileName):
-    path = re.split(".*static", fileName)[1].replace('//', '/')
-    return path
+    return re.split(".*static", fileName)[1].replace('//', '/')

@@ -30,3 +30,16 @@ export interface Monitor {
     mail: string,
     url: string
 }
+
+export interface Scan {
+    id: number,
+    raportPath: string,
+    isDiffrence: number,
+    new_files: string[],
+    changed_files: string[],
+    deleted_files: string[],
+    keyWordsOccurance: string,
+    isOpen: boolean
+}
+
+
