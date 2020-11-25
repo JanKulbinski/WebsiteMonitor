@@ -88,17 +88,30 @@ def get_scan():
 
     monitor = find_monitor(monitor_id)
     if not monitor:
-        abort(make_response(jsonify(message='Scan dosen\'t exist'), 404))
+        abort(make_response(jsonify(message='Monitor dosen\'t exist'), 404))
 
     result = {}
     if monitor['textChange']:
-        isDiffrence = find_scan(monitor_id, scan_id)['isDiffrence']
-        if isDiffrence:
-            result['raport_path'] = f'{PATH_TO_SAVE_DIFFS}\{monitor_id}-{scan_id}.html'
+        scan = find_scan(monitor_id, scan_id)
+        if not scan:
+            result['raport_path'] = f'noScan'
+        else:
+            result['isDiffrence'] = scan['isDiffrence']
+            if scan['isDiffrence']:
+                raport_path_local = f'{PATH_TO_SAVE_DIFFS}\{monitor_id}-{scan_id}.html'
+                raport_path = SERVER_URL + re.search("static.*", raport_path_local).group().replace('//', '/')
+                result['raport_path'] = raport_path
+        
+        if scan and monitor['keyWords']:
+            result['keyWordsOccurance'] = scan['keyWordsOccurance']
 
     if monitor['allFilesChange']:
-        result['new_files'] = find_changed_files(monitor_id, scan_id, FileStatus.NEW.value)
-        result['changed_files'] = find_changed_files(monitor_id, scan_id, FileStatus.MODIFIED.value)
-        result['deleted_files'] = find_deleted_files(monitor_id, scan_id)
+        result['new_files'] = [cut_path_name(item['fileName']) for item in find_changed_files(scan_id, monitor_id, FileStatus.NEW.value)]
+        result['changed_files'] = [cut_path_name(item['fileName']) for item in find_changed_files(scan_id, monitor_id, FileStatus.MODIFIED.value)]
+        result['deleted_files'] = [cut_path_name(item['fileName']) for item in find_deleted_files(scan_id, monitor_id)]
 
     return jsonify(result)
+
+def cut_path_name(fileName):
+    path = re.split(".*static", fileName)[1].replace('//', '/')
+    return path

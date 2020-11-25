@@ -46,11 +46,12 @@ function getMonitor(monitorId: string) {
       });
 }
 
-function getScan(monitorId: string) {
+function getScan(monitorId: string, scanId: number) {
     return axios.get(`${API_URL}${prefix}/get-scan`, {
         headers: getHeaders(), 
         params: {
-            monitorId: monitorId
+            monitorId: monitorId,
+            scanId: scanId
         }
       });
 }

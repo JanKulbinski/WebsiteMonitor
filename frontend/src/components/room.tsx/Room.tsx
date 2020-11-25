@@ -16,7 +16,8 @@ type RoomState = {
     isMonitorsAuthor: boolean,
     isLogged: boolean,
     monitor: Monitor,
-    monitorId: string
+    monitorId: string,
+    scanId: number
 }
 
 type PropsType = RouteComponentProps<PathParamsType> & {
@@ -49,7 +50,8 @@ class Room extends React.Component<PropsType, RoomState> {
             isMonitorsAuthor: false,
             isLogged: false,
             monitor: emptyMonitor,
-            monitorId: ''
+            monitorId: '',
+            scanId: 0
         }
     }
 
@@ -83,8 +85,9 @@ class Room extends React.Component<PropsType, RoomState> {
             const now = Date.now()
             console.log({startDate, endDate, miliseconds, comp:(now > startDate && now < endDate)})
             if(now > startDate && now < endDate) {
-                monitorService.getScan(monitorId)
+                monitorService.getScan(monitorId, this.state.scanId)
                 .then(res => {
+                    this.setState({ scanId: this.state.scanId + 1});
                     console.log(res)
                 })
                 .catch(error => {

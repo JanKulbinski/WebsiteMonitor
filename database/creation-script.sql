@@ -37,11 +37,13 @@ CREATE TABLE monitors
 INSERT INTO monitors (id, url, intervalMinutes, start, end, author)
 VALUES ('test123', 'www.lfc.pl', '60', '2020-06-18 10:34:09', '2020-06-19 12:35:09', 'jan.kowalski@we.pl');
 
+
 CREATE TABLE scans
 (
-  id               INT unsigned NOT NULL,
-  monitorId        VARCHAR(32) NOT NULL,
-  isDiffrence 	   BOOLEAN default FALSE,
+  id                INT unsigned NOT NULL,
+  monitorId         VARCHAR(32) NOT NULL,
+  isDiffrence 	    BOOLEAN default FALSE,
+  keyWordsOccurance TEXT,
   FOREIGN KEY 	   (monitorId)
 	REFERENCES     monitors(id)
     ON DELETE CASCADE,

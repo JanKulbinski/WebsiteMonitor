@@ -14,12 +14,12 @@ def find_monitor(monitor_id):
         monitor = cursor.fetchone()
         return monitor
 
-def insert_scan(scanId, room_id, is_diffrence):
+def insert_scan(scanId, room_id, is_diffrence, key_words_result=""):
     is_diffrence_number = int(is_diffrence == True)
     from app import app, mysql
     with app.app_context():
         cursor = mysql.connection.cursor()
-        cursor.execute('INSERT INTO scans (id, monitorId, isDiffrence) VALUES (%s, %s, %s)',(scanId, room_id, is_diffrence_number))
+        cursor.execute('INSERT INTO scans (id, monitorId, isDiffrence, keyWordsOccurance) VALUES (%s, %s, %s, %s)',(scanId, room_id, is_diffrence_number, key_words_result))
         mysql.connection.commit()
 
 def find_scan(monitor_id, scan_id):
@@ -62,15 +62,25 @@ def find_changed_files(scan_id, room_id, status):
     from app import app, mysql
     with app.app_context():
         cursor = mysql.connection.cursor()
-        cursor.execute('SELECT * FROM files WHERE scanId = %s AND monitorId = %s AND fileStatus = %s', (scan_id, room_id, status))
+        cursor.execute('SELECT fileName FROM files WHERE scanId = %s AND monitorId = %s AND fileStatus = %s', (scan_id, room_id, status))
         return cursor.fetchall()
 
-#TO DO
 def find_deleted_files(scan_id, room_id):
+    scan_id = int(scan_id) - 1
+    if scan_id < 0:
+        return []
     from app import app, mysql
     with app.app_context():
         cursor = mysql.connection.cursor()
-        cursor.execute("SELECT * FROM files WHERE scanId = %s AND monitorId = %s AND (fileStatus = 'NEW' OR fileStatus = 'MODIFIED')", (scan_id, room_id))
+        cursor.execute('''
+        SELECT f1.fileName FROM
+            (SELECT scanId, monitorId, fileName 
+	         FROM files
+	         WHERE scanId = %s and monitorId = %s 
+            ) as f1
+        LEFT JOIN files AS f2 on ( f1.scanId + 1 = f2.scanId and f1.monitorId = f2.monitorId and f1.fileName = f2.fileName)
+        WHERE f2.scanId is NULL
+        ''', (scan_id, room_id))
         return cursor.fetchall()
 
 def find_file(file_name, scan_id, room_id):

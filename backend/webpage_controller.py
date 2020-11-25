@@ -3,9 +3,9 @@ from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 from constants import PATH_TO_SAVE_OlD_HTMLS, PATH_TO_SAVE_DIFFS, PATH_TO_HEADLESS_WEB_BROWSER
-from data_base import insert_scan, find_file, insert_file
+from data_base import insert_scan, find_file, insert_file, find_scan
 from datetime import datetime, timedelta
-from monitors_helpers import download_whole_page, get_project_path
+from monitors_helpers import download_whole_page, get_project_path, delete_folder
 from enums import FileStatus
 import os
 import asyncio
@@ -50,7 +50,6 @@ class Scheduler:
         self.job_thread.start()
 
     def work(self):
-        #time.sleep(self.intervalSeconds)
         options = Options()
         options.headless = True
         driver = webdriver.Chrome(executable_path=PATH_TO_HEADLESS_WEB_BROWSER, chrome_options=options)
@@ -67,8 +66,8 @@ class Scheduler:
             if self.textChange:
                 self.download_and_save_text_from_html(driver)
                 if self.scanId:
-                    is_diffrence = self.compare_text_and_generate_html()
-                    insert_scan(self.scanId, self.room_id, is_diffrence)
+                    is_diffrence, key_words_result = self.compare_text_and_generate_html()
+                    insert_scan(self.scanId, self.room_id, is_diffrence, key_words_result)
 
             if self.allFilesChange:
                 self.compare_all_files()
@@ -80,9 +79,20 @@ class Scheduler:
         filepath_old = f'{PATH_TO_SAVE_OlD_HTMLS}\{self.room_id}-{self.scanId - 1}.txt'
         filepath = f'{PATH_TO_SAVE_OlD_HTMLS}\{self.room_id}-{self.scanId}.txt'
         diffspath = f'{PATH_TO_SAVE_DIFFS}\{self.room_id}-{self.scanId}.html'
-    
-        file_old = open(filepath_old, 'r').readlines()
-        file_new = open(filepath, 'r').readlines()
+
+        file_old = open(filepath_old, encoding="utf8").readlines()
+        file_new = open(filepath,encoding="utf8").readlines()
+
+        key_words = self.keyWords.split(';')
+        words_occurences = {}
+        line_delimiter = '#$@'
+        for index, line in enumerate(file_new):
+            for word in key_words:
+                if word in line:
+                    if word in words_occurences:
+                        words_occurences[word] += line + ' ' + str(index) + line_delimiter
+                    else: 
+                        words_occurences[word] = line
 
         old_scan_name = datetime.now() - timedelta(seconds=self.intervalSeconds)
         new_scan_name = datetime.now()
@@ -93,7 +103,12 @@ class Scheduler:
             out_file.write(diff)
 
         is_diffrence = not filecmp.cmp(filepath_old, filepath)
-        return is_diffrence
+        word_delimiter = '!%^'
+        key_words_result = ''
+        for word, line in words_occurences.items():
+            key_words_result = word + line_delimiter + line + word_delimiter 
+
+        return is_diffrence, key_words_result
 
     def download_and_save_text_from_html(self, driver):
         flag = self.scanId
@@ -127,7 +142,7 @@ class Scheduler:
         download_whole_page(self.url)
         project_path = get_project_path(self.url)
 
-        if not self.textChange:
+        if not self.textChange or not find_scan(self.room_id, self.scanId):
             insert_scan(self.scanId, self.room_id, False)
 
         files = glob.glob(f'{project_path}/**/*', recursive=True) 
