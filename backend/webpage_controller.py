@@ -100,7 +100,7 @@ class Scheduler:
 
         diff = difflib.HtmlDiff(wrapcolumn=50).make_file(file_old, file_new, old_scan_name, new_scan_name)
 
-        with open(diffspath, 'wb') as out_file:
+        with open(diffspath, 'w', encoding="utf-8") as out_file:
             out_file.write(diff)
 
         is_diffrence = not filecmp.cmp(filepath_old, filepath)
