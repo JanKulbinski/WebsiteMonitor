@@ -82,7 +82,6 @@ def get_monitor():
 @monitors.route("/get-scan", methods=['GET'])
 @cross_origin()
 def get_scan():
-    print('HIT')
     monitor_id = request.args.get('monitorId')
     scan_id = request.args.get('scanId')
 

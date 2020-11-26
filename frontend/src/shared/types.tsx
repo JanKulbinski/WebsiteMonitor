@@ -39,6 +39,7 @@ export interface Scan {
     changed_files: string[],
     deleted_files: string[],
     keyWordsOccurance: string,
+    keyWordsOccuranceList: string[][],
     isOpen: boolean
 }
 

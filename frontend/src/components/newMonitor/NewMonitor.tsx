@@ -37,7 +37,7 @@ class NewMonitor extends React.Component<RouteComponentProps, NewMonitorState> {
             iFrameUrl: '',
             iFrameInput: '',
             isFrameLoading: false,
-            isFrameLoaded: true,
+            isFrameLoaded: false,
             form: {
                 inputWebsite: '',
             },

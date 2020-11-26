@@ -1,4 +1,3 @@
-
 def insert_monitor(room_id, url, choosenElement, keyWords, intervalMinutes, start, end, textChange, allFilesChange, author):
     from app import app, mysql
     with app.app_context():

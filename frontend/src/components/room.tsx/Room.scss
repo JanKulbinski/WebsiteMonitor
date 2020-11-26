@@ -1,3 +1,9 @@
+@import './../../variables.scss';
+.modal-iframe {
+    height: 70vh;
+    width: 100%;
+}
+
 .room {
     header {
         display: flex;
@@ -30,6 +36,7 @@
                 width: 100%;
                 border-bottom: solid 1px rgba(0, 0, 0, .125);
             }
+            i,
             p,
             b {
                 color: black;
@@ -43,6 +50,10 @@
             }
             .modified {
                 color: rgb(95, 95, 86);
+            }
+            .key-word {
+                font-weight: bold;
+                color: $beige;
             }
         }
     }

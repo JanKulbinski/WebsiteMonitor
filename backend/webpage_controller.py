@@ -92,21 +92,22 @@ class Scheduler:
                     if word in words_occurences:
                         words_occurences[word] += line + ' ' + str(index) + line_delimiter
                     else: 
-                        words_occurences[word] = line
+                        words_occurences[word] = line + ' ' + str(index) + line_delimiter
+        
 
         old_scan_name = datetime.now() - timedelta(seconds=self.intervalSeconds)
         new_scan_name = datetime.now()
 
-        diff = difflib.HtmlDiff(wrapcolumn=60).make_file(file_old, file_new, old_scan_name, new_scan_name)
+        diff = difflib.HtmlDiff(wrapcolumn=50).make_file(file_old, file_new, old_scan_name, new_scan_name)
 
-        with open(diffspath, 'w') as out_file:
+        with open(diffspath, 'wb') as out_file:
             out_file.write(diff)
 
         is_diffrence = not filecmp.cmp(filepath_old, filepath)
         word_delimiter = '!%^'
         key_words_result = ''
         for word, line in words_occurences.items():
-            key_words_result = word + line_delimiter + line + word_delimiter 
+            key_words_result += word + line_delimiter + line + word_delimiter 
 
         return is_diffrence, key_words_result
 

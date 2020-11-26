@@ -6,7 +6,7 @@ import { get } from 'lodash';
 import { monitorService } from '../../services/monitorsService';
 import { Monitor, Scan } from '../../shared/types';
 import { StyledButton } from '../../shared/BasicElements';
-import { Accordion, Card, Button, Collapse } from 'react-bootstrap';
+import { Accordion, Card, Button, Collapse, Modal } from 'react-bootstrap';
 import { FaExchangeAlt, FaClipboardCheck } from 'react-icons/fa';
 import styled from 'styled-components';
 
@@ -21,7 +21,9 @@ type RoomState = {
     monitor: Monitor,
     monitorId: string,
     newestScanId: number,
-    scans: Scan[]
+    scans: Scan[],
+    modalVisible: boolean,
+    iframeUrl: string
 }
 
 type PropsType = RouteComponentProps<PathParamsType> & {
@@ -44,7 +46,7 @@ const emptyMonitor = {
 }
 
 const black = '#0e0700';
-const  beige = '#fcd489';
+const beige = '#fcd489';
 
 export const DiffButton = styled.button`
     padding: 5px 15px;
@@ -59,33 +61,21 @@ export const DiffButton = styled.button`
     }
 `
 
-const scan1 = {
-    id: 0,
-    raportPath: 'htt',
-    isDiffrence: 1,
-    new_files: ['file1, file2, file3'],
-    changed_files: ['file1, file2, file3'],
-    deleted_files:['file1, file2, file3'],
-    keyWordsOccurance: 'blfd',
-    isOpen: false
-}
 
-const scan2 = {
-    id: 1,
-    raportPath: 'htt',
-    isDiffrence: 1,
-    new_files: ['file1, file2, file3'],
-    changed_files: ['file1, file2, file3'],
-    deleted_files:['file1, file2, file3'],
-    keyWordsOccurance: 'blfd',
-    isOpen: false
-}
+const changeDetect = (scan: Scan) => {
+    return ((scan.changed_files && scan.changed_files.length) ||
+    (scan.new_files && scan.new_files.length) ||
+        (scan.deleted_files && scan.deleted_files.length) ||
+        scan.isDiffrence)
+};
 
-const changeDetect = (scan:Scan) => {
-    return (scan.changed_files.length ||
-     scan.new_files.length ||
-     scan.deleted_files.length ||
-     scan.isDiffrence)
+const parseKeyWordsOccurences = (keyWords: string) => {
+    const words = keyWords.split('!%^');
+    const result: string[][] = [];
+    words.forEach((word, index) => {
+        result[index] = word.split('#$@')
+    });
+    return result;
 }
 
 class Room extends React.Component<PropsType, RoomState> {
@@ -100,7 +90,9 @@ class Room extends React.Component<PropsType, RoomState> {
             monitor: emptyMonitor,
             monitorId: '',
             newestScanId: 0,
-            scans: [scan1, scan2]
+            scans: [],
+            modalVisible: false,
+            iframeUrl: ''
         }
     }
 
@@ -113,7 +105,7 @@ class Room extends React.Component<PropsType, RoomState> {
                 const isLogged = localStorage.getItem('token') ? true : false;
                 this.setState({ monitor: monitor, isMonitorsAuthor: isMonitorsAuthor, isLogged: isLogged, monitorId: id });
                 const { intervalMinutes, start, end } = monitor
-                //this.setIntervalApiPing(intervalMinutes, start, end, id);
+                this.setIntervalApiPing(intervalMinutes, start, end, id);
             })
             .catch(error => {
                 const response = get(error.response, 'data', '');
@@ -132,11 +124,14 @@ class Room extends React.Component<PropsType, RoomState> {
         const miliseconds = intervalMinutes * 60 * 1000
         this.intervalPing = setInterval(() => {
             const now = Date.now()
-            console.log({ startDate, endDate, miliseconds, comp: (now > startDate && now < endDate) })
             if (now > startDate && now < endDate) {
                 monitorService.getScan(monitorId, this.state.newestScanId)
                     .then(res => {
-                        const scan = { ...res.data, id: this.state.newestScanId, isOpen: false };
+                        let keyWordsOccuranceList;
+                        if ('keyWordsOccurance' in res.data) {
+                            keyWordsOccuranceList = parseKeyWordsOccurences(res.data.keyWordsOccurance)
+                        }
+                        const scan = { ...res.data, id: this.state.newestScanId, isOpen: false, keyWordsOccuranceList: keyWordsOccuranceList };
                         this.setState({ scans: [...this.state.scans, scan], newestScanId: this.state.newestScanId + 1 });
                         console.log(res)
                     })
@@ -151,7 +146,7 @@ class Room extends React.Component<PropsType, RoomState> {
     }
 
     computeTime = (id: number) => {
-        const timestamp = Date.parse(this.state.monitor.start) + id * this.state.monitor.intervalMinutes*60*1000 
+        const timestamp = Date.parse(this.state.monitor.start) + id * this.state.monitor.intervalMinutes * 60 * 1000
         const date = new Date(timestamp).toLocaleDateString("pl-PL")
         const time = new Date(timestamp).toLocaleTimeString("pl-PL")
         return `${date} ${time}`
@@ -167,65 +162,81 @@ class Room extends React.Component<PropsType, RoomState> {
         this.setState({ scans })
     }
 
+    handleModalClose = () => {
+        this.setState({modalVisible:false})
+    }
+
+    handleModalOpen = (url: string) => {
+        this.setState({modalVisible:true, iframeUrl:url})
+    }
+
     getCards() {
         return this.state.scans.map((value) => {
             return (
                 <div className='cardsWrapper'>
                     <Card>
-
                         <Card.Header
-                        onClick={() => this.toggle(value.id)}
-                        aria-controls="example-collapse-text"
-                        aria-expanded={value.isOpen}>
-                        <div className="header">
-                        { changeDetect(value) ?
-                            <FaExchangeAlt style={{color:'green'}}></FaExchangeAlt>
-                            : <FaClipboardCheck></FaClipboardCheck>
-                        }
-                            <p>{this.computeTime(value.id)}</p>
-                        </div>
+                            onClick={() => this.toggle(value.id)}
+                            aria-controls="example-collapse-text"
+                            aria-expanded={value.isOpen}>
+                            <div className="header">
+                                {changeDetect(value) ?
+                                    <FaExchangeAlt style={{ color: 'green' }}></FaExchangeAlt>
+                                    : <FaClipboardCheck></FaClipboardCheck>
+                                }
+                                <p>{this.computeTime(value.id)}</p>
+                            </div>
                         </Card.Header>
                         <Collapse in={value.isOpen}>
+                            <Card.Body >
+                                <Card.Text id="example-collapse-text">
+                                    <div className="h2-wrapper">
+                                        <h2>Monitor Raport</h2>
+                                    </div>
 
-                        <Card.Body >
+                                    <div className="body">
+                                        <div className="title">
+                                            <b>Files changes</b>
+                                        </div>
+                                        {value.new_files && value.new_files.map((name) => (<p className="new">+ {name}</p>))}
+                                        {value.changed_files && value.changed_files.map((name) => (<p className="modified">~ {name}</p>))}
+                                        {value.deleted_files && value.deleted_files.map((name) => (<p className="deleted">- {name}</p>))}
+                                    </div>
 
-                            <Card.Text id="example-collapse-text">
-                            <div className="h2-wrapper">
-                            <h2>
-                            Monitor Raport
-                            </h2>
-                            </div>
-
-                            <div className="body">
-                            <div className="title">
-
-                                <b>Files changes</b>
-                                </div>
-                                {value.new_files.map((name) => (<p className="new">+ {name}</p>))}
-                                {value.changed_files.map((name) => (<p className="modified">~ {name}</p>))}
-                                {value.deleted_files.map((name) => (<p className="deleted">- {name}</p>))}
-                            </div>
-                            <div className="body">
-                            <div className="title">
-                                <b>Key words occurences</b>
-                                </div>
-
-                                {value.changed_files.map((name) => (<p className="modified">~ {name}</p>))}
-
-                            </div>
-                            <div className="body">
-                                <div className="title">
-                                <b>Text changes</b>
-
-                                </div>
-                                <DiffButton>Check out text difference</DiffButton>
-
-                            </div>
-                            </Card.Text>
-
-                        </Card.Body>
+                                    <div className="body">
+                                        <div className="title">
+                                            <b>Key words occurences</b>
+                                        </div>
+                                        {value.keyWordsOccuranceList && value.keyWordsOccuranceList.map((name) => {
+                                           return (
+                                            <React.Fragment>
+                                            <p className="key-word"> {name[0]}</p>
+                                                    {name.slice(1).map((line) => {
+                                                        const lineNumber = line.split(" ").splice(-1)[0]
+                                                        const lastIndex = line.lastIndexOf(" ");
+                                                        const lineCut = line.substring(0, lastIndex);
+                                                        return (
+                                                                <span>
+                                                                    <i>
+                                                                        {lineNumber}
+                                                                    </i>
+                                                                <p className="modified">{lineCut}</p>
+                                                                </span>
+                                                        )
+                                                    })}
+                                            </React.Fragment>
+                                           ) 
+                                        })}
+                                    </div>
+                                    <div className="body">
+                                        <div className="title">
+                                            <b>Text changes</b>
+                                        </div>
+                                        <DiffButton onClick={() => this.handleModalOpen(value.raportPath)}>Check out text difference</DiffButton>
+                                    </div>
+                                </Card.Text>
+                            </Card.Body>
                         </Collapse>
-
                     </Card>
                 </div>
             )
@@ -235,6 +246,22 @@ class Room extends React.Component<PropsType, RoomState> {
     render() {
         return (
             <div className='row'>
+                <Modal show={this.state.modalVisible} onHide={this.handleModalClose}  size="xl" centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Htmls comparsion</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        {this.state.iframeUrl ?
+                         <iframe className="modal-iframe" title="Inline Frame Example" src={this.state.iframeUrl}></iframe>
+                            :
+                        <p>No changes</p>
+                        }
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <DiffButton onClick={this.handleModalClose}> Close </DiffButton>
+                    </Modal.Footer>
+                </Modal>
+
                 {this.state.isLogged &&
                     <div className='col-lg-2 col-12'>
                         <MyNavbar componentId='3'></MyNavbar>
@@ -250,6 +277,7 @@ class Room extends React.Component<PropsType, RoomState> {
                             <StyledButton>Manage</StyledButton>
                         </div>
                     }
+
                     {this.getCards()}
                 </main>
             </div>
