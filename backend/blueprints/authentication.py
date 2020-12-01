@@ -33,7 +33,7 @@ def login():
         user = check_user(mail, password_hash)
 
         if user:
-            expires = timedelta(hours=20) # TODO: change for minutes 
+            expires = timedelta(hours=24)
             access_token = create_access_token(identity=mail, expires_delta=expires)
             return jsonify({'message': 'Successfully logged in', 'token': access_token})
 
@@ -76,7 +76,7 @@ def register():
         ) 
         
         insert_user(mail, name, surname, salt, key)
-        expires = timedelta(minutes=20)
+        expires = timedelta(hours=24)
         access_token = create_access_token(identity=mail, expires_delta=expires)
         
         return jsonify({'message': 'Successfully registered and logged in', 'token': access_token}), 201

@@ -9,6 +9,7 @@ import { StyledButton } from '../../shared/BasicElements';
 import { Accordion, Card, Button, Collapse, Modal } from 'react-bootstrap';
 import { FaExchangeAlt, FaClipboardCheck } from 'react-icons/fa';
 import styled from 'styled-components';
+import { NewMonitorForm } from '../newMonitorForm/NewMonitorForm';
 
 
 type PathParamsType = {
@@ -23,6 +24,7 @@ type RoomState = {
     newestScanId: number,
     scans: Scan[],
     modalVisible: boolean,
+    manageVisible: boolean,
     iframeUrl: string
 }
 
@@ -41,7 +43,8 @@ const emptyMonitor = {
     intervalMinutes: 1440,
     textChange: false,
     allFilesChange: false,
-    mail: localStorage.getItem('mail') || '',
+    author: localStorage.getItem('mail') || '',
+    mailNotification: '',
     url: ''
 }
 
@@ -89,9 +92,10 @@ class Room extends React.Component<PropsType, RoomState> {
             isLogged: false,
             monitor: emptyMonitor,
             monitorId: '',
-            newestScanId: 0,
+            newestScanId: 1,
             scans: [],
             modalVisible: false,
+            manageVisible: false,
             iframeUrl: ''
         }
     }
@@ -109,7 +113,6 @@ class Room extends React.Component<PropsType, RoomState> {
             })
             .catch(error => {
                 const response = get(error.response, 'data', '');
-                alert(response.msg)
                 console.log(response.msg);
             });
     }
@@ -122,43 +125,36 @@ class Room extends React.Component<PropsType, RoomState> {
         const startDate = Date.parse(start);
         const endDate = Date.parse(end);
         const miliseconds = intervalMinutes * 60 * 1000
-        this.intervalPing = setInterval(() => {
-            const now = Date.now()
-            if (now > startDate && now < endDate) {
-                monitorService.getScan(monitorId, this.state.newestScanId)
-                    .then(res => {
-                        let keyWordsOccuranceList;
-                        if ('keyWordsOccurance' in res.data) {
-                            keyWordsOccuranceList = parseKeyWordsOccurences(res.data.keyWordsOccurance)
-                        }
-                        const scan = { ...res.data, id: this.state.newestScanId, isOpen: false, keyWordsOccuranceList: keyWordsOccuranceList };
-                        this.setState({ scans: [...this.state.scans, scan], newestScanId: this.state.newestScanId + 1 });
-                        console.log(res)
-                    })
-                    .catch(error => {
-                        const response = get(error.response, 'data', '');
-                        alert(response.msg)
-                        console.log(response.msg);
-                    });
-            }
+        this.intervalPing = setInterval(async () => {
+                const now = Date.now()
+                if (now > startDate && now < endDate) {
+                    monitorService.getScan(monitorId, this.state.newestScanId)
+                        .then(res => {
+                            let keyWordsOccuranceList;
+                            if ('keyWordsOccurance' in res.data) {
+                                keyWordsOccuranceList = parseKeyWordsOccurences(res.data.keyWordsOccurance)
+                            }
+                            const scan = { ...res.data, id: this.state.newestScanId, isOpen: false, keyWordsOccuranceList: keyWordsOccuranceList };
+                            this.setState({ scans: [...this.state.scans, scan], newestScanId: this.state.newestScanId + 1 });
+                        })
+                        .catch(error => {
+                            const response = get(error.response, 'data', '');
+                            console.log(response.msg);
+                        });
+                } else if (now > endDate) {
+                    clearInterval(this.intervalPing)
+                }
         }, miliseconds)
 
-    }
-
-    computeTime = (id: number) => {
-        const timestamp = Date.parse(this.state.monitor.start) + id * this.state.monitor.intervalMinutes * 60 * 1000
-        const date = new Date(timestamp).toLocaleDateString("pl-PL")
-        const time = new Date(timestamp).toLocaleTimeString("pl-PL")
-        return `${date} ${time}`
     }
 
     toggle = (id: number) => {
         let scans = [...this.state.scans]
         let scan = {
-            ...scans[id],
-            isOpen: !scans[id].isOpen
+            ...scans[id - 1],
+            isOpen: !scans[id - 1].isOpen
         }
-        scans[id] = scan
+        scans[id - 1] = scan
         this.setState({ scans })
     }
 
@@ -167,6 +163,9 @@ class Room extends React.Component<PropsType, RoomState> {
     }
 
     handleModalOpen = (url: string) => {
+        if(url === 'noPath') {
+            url = '';
+        }
         this.setState({modalVisible:true, iframeUrl:url})
     }
 
@@ -184,7 +183,7 @@ class Room extends React.Component<PropsType, RoomState> {
                                     <FaExchangeAlt style={{ color: 'green' }}></FaExchangeAlt>
                                     : <FaClipboardCheck></FaClipboardCheck>
                                 }
-                                <p>{this.computeTime(value.id)}</p>
+                                <p>{value.date}</p>
                             </div>
                         </Card.Header>
                         <Collapse in={value.isOpen}>
@@ -243,9 +242,75 @@ class Room extends React.Component<PropsType, RoomState> {
         })
     }
 
+    handleManageClose = () => {
+        this.setState({manageVisible:false})
+    }
+
+    handleManageOpen = () => {
+        this.setState({manageVisible:true})
+    }
+
+    handleMonitorDelete = () => {
+        monitorService.deleteMonitor(this.state.monitorId)
+        .then(res => {
+            this.props.history.push({
+                pathname: `/all-monitors`
+            });
+        })
+        .catch(error => {
+            const response = get(error.response, 'data', '');
+            alert(response.msg)
+            console.log(response.msg);
+        });
+
+
+    }
+
+    handleSubmit = (monitor: Monitor) => {
+
+        monitorService.updateMonitor(monitor)
+            .then(res => {
+                const data = get(res, 'data', '');
+                const roomId = data ? data.roomId : '';
+
+                alert(`Monitor ${roomId} changed!`)
+                console.log(`Monitor ${roomId} changed!`)
+
+                this.setState({monitor: monitor});
+                const { intervalMinutes, start, end } = monitor
+                
+                clearInterval(this.intervalPing)
+                this.setIntervalApiPing(intervalMinutes, start, end, this.state.monitorId);
+            })
+            .catch(error => {
+                const response = get(error.response, 'data', '');
+                alert(response.msg)
+                console.log(response.msg);
+            });
+
+       this.handleManageClose()
+    }
+
+    getManageModal() {
+        return (
+            <Modal show={this.state.manageVisible} onHide={this.handleManageClose}  size="xl" centered>
+            <Modal.Header closeButton>
+                <Modal.Title>Manage</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+            <NewMonitorForm onSubmitClick={this.handleSubmit} monitor={this.state.monitor}></NewMonitorForm>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="danger"onClick={this.handleMonitorDelete}>Delete monitor</Button>
+            </Modal.Footer>
+        </Modal>
+        )
+    }
+
     render() {
         return (
             <div className='row'>
+                {this.getManageModal()}
                 <Modal show={this.state.modalVisible} onHide={this.handleModalClose}  size="xl" centered>
                     <Modal.Header closeButton>
                         <Modal.Title>Htmls comparsion</Modal.Title>
@@ -274,7 +339,7 @@ class Room extends React.Component<PropsType, RoomState> {
                     </header>
                     {this.state.isMonitorsAuthor &&
                         <div className='manageWrapper'>
-                            <StyledButton>Manage</StyledButton>
+                            <StyledButton onClick={this.handleManageOpen}>Manage</StyledButton>
                         </div>
                     }
 

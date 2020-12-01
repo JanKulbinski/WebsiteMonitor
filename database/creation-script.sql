@@ -1,3 +1,5 @@
+# Date format : '2020-06-18 10:34:09'
+
 DROP DATABASE if exists websiteMonitor;
 CREATE DATABASE websiteMonitor;
 USE websiteMonitor;
@@ -12,9 +14,6 @@ CREATE TABLE users
   PRIMARY KEY     (mail)                                 
 );
 
-INSERT INTO users (name, surname, mail, salt, password)
-VALUES ('Jan', 'Kowalski', 'jan.kowalski@we.pl', 'nR4SWlPtW1HdHL6BKQSDcckbVkjmaokt', 'eEZJxcFsyR5WLnVa8LqHLpKPllJR8v10');
-
 CREATE TABLE monitors
 (
   id               	  VARCHAR(32) NOT NULL,
@@ -27,6 +26,7 @@ CREATE TABLE monitors
   textChange    	  BOOLEAN default FALSE,                 
   allFilesChange 	  BOOLEAN default FALSE,
   author 			  VARCHAR(255) NOT NULL,
+  mailNotification 	  VARCHAR(255),
   active 			  BOOLEAN default true,
   FOREIGN KEY (author)
         REFERENCES users(mail)
@@ -34,15 +34,13 @@ CREATE TABLE monitors
   PRIMARY KEY     (id)  
 );
 
-INSERT INTO monitors (id, url, intervalMinutes, start, end, author)
-VALUES ('test123', 'www.lfc.pl', '60', '2020-06-18 10:34:09', '2020-06-19 12:35:09', 'jan.kowalski@we.pl');
-
 
 CREATE TABLE scans
 (
   id                INT unsigned NOT NULL,
   monitorId         VARCHAR(32) NOT NULL,
   isDiffrence 	    BOOLEAN default FALSE,
+  date				DATETIME NOT NULL,
   keyWordsOccurance TEXT,
   FOREIGN KEY 	   (monitorId)
 	REFERENCES     monitors(id)

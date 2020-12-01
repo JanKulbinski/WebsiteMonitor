@@ -27,7 +27,8 @@ export interface Monitor {
     intervalMinutes: number,
     textChange: boolean,
     allFilesChange: boolean,
-    mail: string,
+    author:string,
+    mailNotification: string,
     url: string
 }
 
@@ -40,7 +41,8 @@ export interface Scan {
     deleted_files: string[],
     keyWordsOccurance: string,
     keyWordsOccuranceList: string[][],
-    isOpen: boolean
+    isOpen: boolean,
+    date: string,
 }
 
 

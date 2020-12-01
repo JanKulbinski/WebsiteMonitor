@@ -6,6 +6,8 @@ import { Monitor } from '../shared/types';
 export const monitorService = {
     getPageToMonitor,
     createMonitor,
+    updateMonitor,
+    deleteMonitor,
     getMonitor,
     getScan
 };
@@ -37,6 +39,15 @@ function createMonitor(monitor: Monitor) {
     headers)
 }
 
+function updateMonitor(monitor: Monitor) {
+    const headers = { headers: getHeaders() }
+    
+    return axios.put(`${API_URL}${prefix}/update-monitor`, {
+        ...monitor
+    },
+    headers)
+}
+
 function getMonitor(monitorId: string) {
     return axios.get(`${API_URL}${prefix}/get-monitor`, {
         headers: getHeaders(), 
@@ -44,6 +55,16 @@ function getMonitor(monitorId: string) {
             monitorId: monitorId
         }
       });
+}
+
+function deleteMonitor(monitorId: string) {
+    const headers = { headers: getHeaders() }
+    return axios.delete(`${API_URL}${prefix}/delete-monitor`, {
+        headers: getHeaders(),
+        params: {
+            monitorId: monitorId
+        }
+    });
 }
 
 function getScan(monitorId: string, scanId: number) {

@@ -1,24 +1,52 @@
-def insert_monitor(room_id, url, choosenElement, keyWords, intervalMinutes, start, end, textChange, allFilesChange, author):
+from datetime import datetime
+
+def insert_monitor(room_id, url, choosenElement, keyWords, intervalMinutes, start, end,
+ textChange, allFilesChange, author, mailNotification):
     from app import app, mysql
     with app.app_context():
         cursor = mysql.connection.cursor()
-        cursor.execute('INSERT INTO monitors (id, url, choosenElements, keyWords, intervalMinutes, start, end, textChange, allFilesChange, author) VALUES (%s,%s, %s, %s, %s, %s, %s, %s, %s, %s)',(room_id, url, choosenElement, keyWords, intervalMinutes, start, end, textChange, allFilesChange, author))
+        cursor.execute('INSERT INTO monitors \
+            (id, url, choosenElements, keyWords, intervalMinutes, start, end, \
+                textChange, allFilesChange, author, mailNotification) \
+            VALUES \
+            (%s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+             (room_id, url, choosenElement, keyWords, intervalMinutes, start,\
+                  end, textChange, allFilesChange, author, mailNotification))
         mysql.connection.commit()
 
 def find_monitor(monitor_id):
     from app import app, mysql
     with app.app_context():
         cursor = mysql.connection.cursor()
-        cursor.execute('SELECT * FROM monitors WHERE id = %s', (monitor_id,))
+        cursor.execute('SELECT * FROM monitors WHERE id = %s and active = 1', (monitor_id,))
         monitor = cursor.fetchone()
         return monitor
 
+def update_monitor(room_id, keyWords, intervalMinutes, textChange, allFilesChange, mailNotification, start, end):
+    from app import app, mysql
+    with app.app_context():
+        cursor = mysql.connection.cursor()
+        cursor.execute('UPDATE monitors SET \
+            keyWords = %s, intervalMinutes = %s, textChange = %s,\
+                 start = %s, end = %s, allFilesChange = %s, mailNotification = %s WHERE id = %s',
+        (keyWords, intervalMinutes, textChange, start, end, allFilesChange, mailNotification, room_id))
+        mysql.connection.commit()
+
+def deactivate_monitor(monitor_id):
+    from app import app, mysql
+    with app.app_context():
+        cursor = mysql.connection.cursor()
+        cursor.execute('UPDATE monitors SET active = 0 WHERE id = %s', (monitor_id,))
+        mysql.connection.commit()
+
 def insert_scan(scanId, room_id, is_diffrence, key_words_result=""):
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     is_diffrence_number = int(is_diffrence == True)
     from app import app, mysql
     with app.app_context():
         cursor = mysql.connection.cursor()
-        cursor.execute('INSERT INTO scans (id, monitorId, isDiffrence, keyWordsOccurance) VALUES (%s, %s, %s, %s)',(scanId, room_id, is_diffrence_number, key_words_result))
+        cursor.execute('INSERT INTO scans (id, monitorId, isDiffrence, keyWordsOccurance, date) \
+            VALUES (%s, %s, %s, %s, %s)',(scanId, room_id, is_diffrence_number, key_words_result, now))
         mysql.connection.commit()
 
 def find_scan(monitor_id, scan_id):
@@ -61,7 +89,8 @@ def find_changed_files(scan_id, room_id, status):
     from app import app, mysql
     with app.app_context():
         cursor = mysql.connection.cursor()
-        cursor.execute('SELECT fileName FROM files WHERE scanId = %s AND monitorId = %s AND fileStatus = %s', (scan_id, room_id, status))
+        cursor.execute('SELECT fileName FROM files WHERE scanId = %s AND monitorId = %s AND fileStatus = %s',
+         (scan_id, room_id, status))
         return cursor.fetchall()
 
 def find_deleted_files(scan_id, room_id):
@@ -77,7 +106,8 @@ def find_deleted_files(scan_id, room_id):
 	         FROM files
 	         WHERE scanId = %s and monitorId = %s 
             ) as f1
-        LEFT JOIN files AS f2 on ( f1.scanId + 1 = f2.scanId and f1.monitorId = f2.monitorId and f1.fileName = f2.fileName)
+        LEFT JOIN files AS f2 on
+         ( f1.scanId + 1 = f2.scanId and f1.monitorId = f2.monitorId and f1.fileName = f2.fileName)
         WHERE f2.scanId is NULL
         ''', (scan_id, room_id))
         return cursor.fetchall()
@@ -86,12 +116,16 @@ def find_file(file_name, scan_id, room_id):
     from app import app, mysql
     with app.app_context():
         cursor = mysql.connection.cursor()
-        cursor.execute('SELECT * FROM files WHERE fileName = %s AND scanId = %s AND monitorId = %s', (file_name, scan_id, room_id))
+        cursor.execute('SELECT * FROM files \
+            WHERE fileName = %s AND scanId = %s AND monitorId = %s',
+         (file_name, scan_id, room_id))
         return cursor.fetchone()
 
 def insert_file(scanId, room_id, file_hash, file_name, status):
     from app import app, mysql
     with app.app_context():
         cursor = mysql.connection.cursor()
-        cursor.execute('INSERT INTO files (scanId, monitorId, fileHash, fileName, fileStatus) VALUES (%s, %s, %s, %s, %s)', (scanId, room_id, file_hash, file_name, status))
+        cursor.execute('INSERT INTO files (scanId, monitorId, fileHash, fileName, fileStatus) \
+            VALUES (%s, %s, %s, %s, %s)',
+         (scanId, room_id, file_hash, file_name, status))
         mysql.connection.commit()

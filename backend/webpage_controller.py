@@ -3,7 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 from constants import PATH_TO_SAVE_OlD_HTMLS, PATH_TO_SAVE_DIFFS, PATH_TO_HEADLESS_WEB_BROWSER
-from data_base import insert_scan, find_file, insert_file, find_scan
+from data_base import insert_scan, find_file, insert_file, find_scan, deactivate_monitor
 from datetime import datetime, timedelta
 from monitors_helpers import download_whole_page, get_project_path, delete_folder
 from enums import FileStatus
@@ -27,7 +27,7 @@ def tag_visible(element):
     return True
 
 class Scheduler:
-    def __init__(self, room_id, start, end, tag, index, keyWords, intervalMinutes, textChange, allFilesChange, author, url):        
+    def __init__(self, room_id, start, end, tag, index, keyWords, intervalMinutes, textChange, allFilesChange, author, url, mailNotification, scanId=0):        
         start = datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
         self.start = datetime.timestamp(start)
 
@@ -43,11 +43,19 @@ class Scheduler:
         self.allFilesChange = allFilesChange
         self.author = author
         self.url = url
-        self.scanId = 0
+        self.mailNotification = mailNotification
+        self.scanId = scanId
+        self.active = True
+
+    def get_recreate_properties(self):
+        return self.author, self.index, self.tag, self.url, self.scanId
 
     def run(self):
         self.job_thread = threading.Thread(target=self.work)
         self.job_thread.start()
+
+    def stop(self):
+        self.active = False
 
     def work(self):
         options = Options()
@@ -59,7 +67,8 @@ class Scheduler:
 
         while 1:
             now = datetime.timestamp(datetime.now())
-            if now >= self.end or (not self.textChange and not self.allFilesChange):
+            if now >= self.end or (not self.textChange and not self.allFilesChange) or not self.active:
+                deactivate_monitor(self.room_id)
                 print(f"MONITOR {self.room_id} has ended {datetime.now()}")
                 return
 
