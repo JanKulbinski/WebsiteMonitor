@@ -22,6 +22,13 @@ def find_monitor(monitor_id):
         monitor = cursor.fetchone()
         return monitor
 
+def find_monitors_by_user(mail):
+    from app import app, mysql
+    with app.app_context():
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT id, url, start, end, active FROM monitors WHERE author = %s ORDER BY start DESC', (mail,))
+        return cursor.fetchall()
+
 def update_monitor(room_id, keyWords, intervalMinutes, textChange, allFilesChange, mailNotification, start, end):
     from app import app, mysql
     with app.app_context():

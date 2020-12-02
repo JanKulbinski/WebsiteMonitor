@@ -1,0 +1,28 @@
+.all-monitors {
+    header {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        width: 100%;
+    }
+    .cards-wrapper {
+        width: 80%;
+        margin: 20px auto;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            p {
+                color: black;
+                font-size: 1.35rem;
+            }
+        }
+        .dates {
+            span {
+                font-size: 1rem;
+                color: gray;
+                margin: 0 5px;
+            }
+        }
+    }
+}

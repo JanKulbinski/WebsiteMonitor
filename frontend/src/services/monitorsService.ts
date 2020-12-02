@@ -9,6 +9,7 @@ export const monitorService = {
     updateMonitor,
     deleteMonitor,
     getMonitor,
+    getAllUsersMonitors,
     getScan
 };
 
@@ -57,8 +58,13 @@ function getMonitor(monitorId: string) {
       });
 }
 
+function getAllUsersMonitors() {
+    return axios.get(`${API_URL}${prefix}/get-users-monitors`, {
+        headers: getHeaders()
+      });
+}
+
 function deleteMonitor(monitorId: string) {
-    const headers = { headers: getHeaders() }
     return axios.delete(`${API_URL}${prefix}/delete-monitor`, {
         headers: getHeaders(),
         params: {

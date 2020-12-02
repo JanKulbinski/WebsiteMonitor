@@ -53,7 +53,7 @@ export const MyNavbar = ({componentId}: Props) => {
                     <ul className= 'flex-column justify-content-start' style={ulStyle}>
                         <NavbarLink id='1' style={activeLink === '1' ? activeStyle:undefined} to="/new-monitor">New monitor</NavbarLink>
                         <NavbarLink id='2' style={activeLink === '2' ? activeStyle:undefined} to="/all-monitors">All monitors</NavbarLink>
-                        <NavbarLink id='3' style={activeLink === '3' ? activeStyle:undefined} to="/">Room</NavbarLink>
+                        <NavbarLink id='3' style={activeLink === '3' ? activeStyle:undefined} to="/" onClick={(e) => e.preventDefault()}>Room</NavbarLink>
                         <NavbarLink id='4' style={activeLink === '4' ? activeStyle:undefined} to="/">Back</NavbarLink>
                         <NavbarLink id='5' style={activeLink === '5' ? activeStyle:undefined} to="/" onClick={logout}>Log out</NavbarLink>
                     </ul>

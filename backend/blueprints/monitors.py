@@ -9,7 +9,7 @@ import re
 from enums import FileStatus
 
 monitors = Blueprint('monitors', __name__, url_prefix='/monitors')
-from data_base import insert_monitor, find_monitor, update_monitor, find_scan, find_deleted_files, find_changed_files, deactivate_monitor
+from data_base import insert_monitor, find_monitor, update_monitor, find_scan, find_deleted_files, find_changed_files, deactivate_monitor, find_monitors_by_user
 from webpage_controller import Scheduler
 
 
@@ -79,6 +79,16 @@ def get_monitor():
         monitor['choosenElements'] = {index: index, tag: tag}
 
         return jsonify({'monitor': monitor})
+
+@monitors.route("/get-users-monitors", methods=['GET'])
+@cross_origin()
+def get_monitors_by_user():
+    user_mail = decode_token(request.headers.get('Authorization')).get('identity')
+    if(not user_mail):
+        abort(make_response(jsonify(message='Session expired'), 401))
+    
+    monitors = find_monitors_by_user(user_mail)
+    return jsonify(monitors)
 
 @monitors.route("/update-monitor", methods=['PUT'])
 @cross_origin()
