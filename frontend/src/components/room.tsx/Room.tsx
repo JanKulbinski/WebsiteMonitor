@@ -166,8 +166,8 @@ class Room extends React.Component<PropsType, RoomState> {
 
                 if (url !== 'noPath') {
                     pdf.text(`Link to HTML comparsion:`, 10, 50);
+                    pdf.setTextColor(52, 29, 145);
                     pdf.text(url, 10, 54);
-
                 }
 
                 pdf.addImage(imgData, 'PNG', 10, 60);
