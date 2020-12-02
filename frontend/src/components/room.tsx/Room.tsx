@@ -6,10 +6,12 @@ import { get } from 'lodash';
 import { monitorService } from '../../services/monitorsService';
 import { Monitor, Scan } from '../../shared/types';
 import { StyledButton } from '../../shared/BasicElements';
-import { Accordion, Card, Button, Collapse, Modal } from 'react-bootstrap';
-import { FaExchangeAlt, FaClipboardCheck } from 'react-icons/fa';
+import { Card, Button, Collapse, Modal } from 'react-bootstrap';
+import { FaExchangeAlt, FaClipboardCheck, FaFilePdf } from 'react-icons/fa';
 import styled from 'styled-components';
 import { NewMonitorForm } from '../newMonitorForm/NewMonitorForm';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 
 type PathParamsType = {
@@ -67,7 +69,7 @@ export const DiffButton = styled.button`
 
 const changeDetect = (scan: Scan) => {
     return ((scan.changed_files && scan.changed_files.length) ||
-    (scan.new_files && scan.new_files.length) ||
+        (scan.new_files && scan.new_files.length) ||
         (scan.deleted_files && scan.deleted_files.length) ||
         scan.isDiffrence)
 };
@@ -126,26 +128,52 @@ class Room extends React.Component<PropsType, RoomState> {
         const endDate = Date.parse(end);
         const miliseconds = intervalMinutes * 60 * 1000
         this.intervalPing = setInterval(async () => {
-                const now = Date.now()
-                if (now > startDate && now < endDate) {
-                    monitorService.getScan(monitorId, this.state.newestScanId)
-                        .then(res => {
-                            let keyWordsOccuranceList;
-                            if ('keyWordsOccurance' in res.data) {
-                                keyWordsOccuranceList = parseKeyWordsOccurences(res.data.keyWordsOccurance)
-                            }
-                            const scan = { ...res.data, id: this.state.newestScanId, isOpen: false, keyWordsOccuranceList: keyWordsOccuranceList };
-                            this.setState({ scans: [...this.state.scans, scan], newestScanId: this.state.newestScanId + 1 });
-                        })
-                        .catch(error => {
-                            const response = get(error.response, 'data', '');
-                            console.log(response.msg);
-                        });
-                } else if (now > endDate) {
-                    clearInterval(this.intervalPing)
-                }
+            const now = Date.now()
+            if (now > startDate && now < endDate) {
+                monitorService.getScan(monitorId, this.state.newestScanId)
+                    .then(res => {
+                        let keyWordsOccuranceList;
+                        if ('keyWordsOccurance' in res.data) {
+                            keyWordsOccuranceList = parseKeyWordsOccurences(res.data.keyWordsOccurance)
+                        }
+                        const scan = { ...res.data, id: this.state.newestScanId, isOpen: false, keyWordsOccuranceList: keyWordsOccuranceList };
+                        this.setState({ scans: [...this.state.scans, scan], newestScanId: this.state.newestScanId + 1 });
+                    })
+                    .catch(error => {
+                        const response = get(error.response, 'data', '');
+                        console.log(response.msg);
+                    });
+            } else if (now > endDate) {
+                clearInterval(this.intervalPing)
+            }
         }, miliseconds)
 
+    }
+
+    handlePDF = (id: string, date: string, url: string) => {
+        const div = document.getElementById(id);
+        if (div) {
+            html2canvas(div).then((canvas) => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF();
+
+                pdf.setFontSize(25);
+                pdf.setFont("times", "bold");
+                pdf.text(10, 20, this.state.monitor.url)
+
+                pdf.setFontSize(10);
+                pdf.text(10, 30, date)
+
+                if (url !== 'noPath') {
+                    pdf.text(`Link to HTML comparsion:`, 10, 50);
+                    pdf.text(url, 10, 54);
+
+                }
+
+                pdf.addImage(imgData, 'PNG', 10, 60);
+                pdf.save(`scan-${date.slice(5, -3)}.pdf`);
+            });
+        }
     }
 
     toggle = (id: number) => {
@@ -159,20 +187,20 @@ class Room extends React.Component<PropsType, RoomState> {
     }
 
     handleModalClose = () => {
-        this.setState({modalVisible:false})
+        this.setState({ modalVisible: false })
     }
 
     handleModalOpen = (url: string) => {
-        if(url === 'noPath') {
+        if (url === 'noPath') {
             url = '';
         }
-        this.setState({modalVisible:true, iframeUrl:url})
+        this.setState({ modalVisible: true, iframeUrl: url })
     }
 
     getCards() {
-        return this.state.scans.map((value) => {
+        return this.state.scans.map((value, index) => {
             return (
-                <div className='cardsWrapper'>
+                <div id='cardsWrapper'>
                     <Card>
                         <Card.Header
                             onClick={() => this.toggle(value.id)}
@@ -192,46 +220,57 @@ class Room extends React.Component<PropsType, RoomState> {
                                     <div className="h2-wrapper">
                                         <h2>Monitor Raport</h2>
                                     </div>
+                                    <div id={`pdf-${index}`}>
 
-                                    <div className="body">
-                                        <div className="title">
-                                            <b>Files changes</b>
+                                        <div className="body">
+                                            <div className="title">
+                                                <b>Files changes</b>
+                                            </div>
+                                            {value.new_files && value.new_files.map((name) => (<p className="new">+ {name}</p>))}
+                                            {value.changed_files && value.changed_files.map((name) => (<p className="modified">~ {name}</p>))}
+                                            {value.deleted_files && value.deleted_files.map((name) => (<p className="deleted">- {name}</p>))}
                                         </div>
-                                        {value.new_files && value.new_files.map((name) => (<p className="new">+ {name}</p>))}
-                                        {value.changed_files && value.changed_files.map((name) => (<p className="modified">~ {name}</p>))}
-                                        {value.deleted_files && value.deleted_files.map((name) => (<p className="deleted">- {name}</p>))}
-                                    </div>
 
-                                    <div className="body">
-                                        <div className="title">
-                                            <b>Key words occurences</b>
-                                        </div>
-                                        {value.keyWordsOccuranceList && value.keyWordsOccuranceList.map((name) => {
-                                           return (
-                                            <React.Fragment>
-                                            <p className="key-word"> {name[0]}</p>
-                                                    {name.slice(1).map((line) => {
-                                                        const lineNumber = line.split(" ").splice(-1)[0]
-                                                        const lastIndex = line.lastIndexOf(" ");
-                                                        const lineCut = line.substring(0, lastIndex);
-                                                        return (
+                                        <div className="body">
+                                            <div className="title">
+                                                <b>Key words occurences</b>
+                                            </div>
+                                            {value.keyWordsOccuranceList && value.keyWordsOccuranceList.map((name) => {
+                                                return (
+                                                    <React.Fragment>
+                                                        <p className="key-word"> {name[0]}</p>
+                                                        {name.slice(1).map((line) => {
+                                                            const lineNumber = line.split(" ").splice(-1)[0]
+                                                            const lastIndex = line.lastIndexOf(" ");
+                                                            const lineCut = line.substring(0, lastIndex);
+                                                            return (
                                                                 <span>
                                                                     <i>
                                                                         {lineNumber}
                                                                     </i>
-                                                                <p className="modified">{lineCut}</p>
+                                                                    <p className="modified">{lineCut}</p>
                                                                 </span>
-                                                        )
-                                                    })}
-                                            </React.Fragment>
-                                           ) 
-                                        })}
+                                                            )
+                                                        })}
+                                                    </React.Fragment>
+                                                )
+                                            })}
+                                        </div>
                                     </div>
+
                                     <div className="body">
                                         <div className="title">
                                             <b>Text changes</b>
                                         </div>
-                                        <DiffButton onClick={() => this.handleModalOpen(value.raportPath)}>Check out text difference</DiffButton>
+                                        {
+                                            value.isDiffrence > 0 && (
+                                            <div className="buttons">
+                                                <DiffButton onClick={() => this.handleModalOpen(value.raportPath)}>Check out text difference</DiffButton>
+                                                <DiffButton onClick={() => this.handlePDF(`pdf-${index}`, value.date, value.raportPath)}>Generate PDF <FaFilePdf></FaFilePdf></DiffButton>
+                                            </div>
+                                            )
+                                        }
+
                                     </div>
                                 </Card.Text>
                             </Card.Body>
@@ -243,25 +282,25 @@ class Room extends React.Component<PropsType, RoomState> {
     }
 
     handleManageClose = () => {
-        this.setState({manageVisible:false})
+        this.setState({ manageVisible: false })
     }
 
     handleManageOpen = () => {
-        this.setState({manageVisible:true})
+        this.setState({ manageVisible: true })
     }
 
     handleMonitorDelete = () => {
         monitorService.deleteMonitor(this.state.monitorId)
-        .then(res => {
-            this.props.history.push({
-                pathname: `/all-monitors`
+            .then(res => {
+                this.props.history.push({
+                    pathname: `/all-monitors`
+                });
+            })
+            .catch(error => {
+                const response = get(error.response, 'data', '');
+                alert(response.msg)
+                console.log(response.msg);
             });
-        })
-        .catch(error => {
-            const response = get(error.response, 'data', '');
-            alert(response.msg)
-            console.log(response.msg);
-        });
 
 
     }
@@ -276,9 +315,9 @@ class Room extends React.Component<PropsType, RoomState> {
                 alert(`Monitor ${roomId} changed!`)
                 console.log(`Monitor ${roomId} changed!`)
 
-                this.setState({monitor: monitor});
+                this.setState({ monitor: monitor });
                 const { intervalMinutes, start, end } = monitor
-                
+
                 clearInterval(this.intervalPing)
                 this.setIntervalApiPing(intervalMinutes, start, end, this.state.monitorId);
             })
@@ -288,22 +327,22 @@ class Room extends React.Component<PropsType, RoomState> {
                 console.log(response.msg);
             });
 
-       this.handleManageClose()
+        this.handleManageClose()
     }
 
     getManageModal() {
         return (
-            <Modal show={this.state.manageVisible} onHide={this.handleManageClose}  size="xl" centered>
-            <Modal.Header closeButton>
-                <Modal.Title>Manage</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-            <NewMonitorForm onSubmitClick={this.handleSubmit} monitor={this.state.monitor}></NewMonitorForm>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="danger"onClick={this.handleMonitorDelete}>Delete monitor</Button>
-            </Modal.Footer>
-        </Modal>
+            <Modal show={this.state.manageVisible} onHide={this.handleManageClose} size="xl" centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Manage</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <NewMonitorForm onSubmitClick={this.handleSubmit} monitor={this.state.monitor}></NewMonitorForm>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="danger" onClick={this.handleMonitorDelete}>Delete monitor</Button>
+                </Modal.Footer>
+            </Modal>
         )
     }
 
@@ -311,15 +350,15 @@ class Room extends React.Component<PropsType, RoomState> {
         return (
             <div className='row'>
                 {this.getManageModal()}
-                <Modal show={this.state.modalVisible} onHide={this.handleModalClose}  size="xl" centered>
+                <Modal show={this.state.modalVisible} onHide={this.handleModalClose} size="xl" centered>
                     <Modal.Header closeButton>
                         <Modal.Title>Htmls comparsion</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         {this.state.iframeUrl ?
-                         <iframe className="modal-iframe" title="Inline Frame Example" src={this.state.iframeUrl}></iframe>
+                            <iframe className="modal-iframe" title="Inline Frame Example" src={this.state.iframeUrl}></iframe>
                             :
-                        <p>No changes</p>
+                            <p>No changes</p>
                         }
                     </Modal.Body>
                     <Modal.Footer>

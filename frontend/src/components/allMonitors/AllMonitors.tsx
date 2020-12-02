@@ -49,7 +49,7 @@ export default class AllMonitors extends React.Component<{},allMonitorsState> {
                             <p>{monitor.url}</p>
                             {
                             monitor.active ?
-                            <Link to={`/room:${monitor.id}`}>
+                            <Link to={`/room/:${monitor.id}`}>
                                 <FaDoorOpen style={{ fill: 'rgb(49, 211, 49)' }} size={30}></FaDoorOpen>
                             </Link>
                             :
