@@ -104,7 +104,6 @@ export default class HomePage extends React.Component<{}, HomeState> {
                     <li>Get instant information via mail or push notifications</li>
                     <li>Share results of monitoring with colleagues</li>
                     <li>Generate raport in PDF</li>
-                    <li>Create automatic chart</li>
                 </ul>
             )
         }

@@ -9,7 +9,7 @@ import re
 from enums import FileStatus
 
 monitors = Blueprint('monitors', __name__, url_prefix='/monitors')
-from data_base import insert_monitor, find_monitor, update_monitor, find_scan, find_deleted_files, find_changed_files, deactivate_monitor, find_monitors_by_user
+from data_base import insert_monitor, find_monitor, update_monitor, find_scan, find_deleted_files, find_changed_files, deactivate_monitor, find_monitors_by_user, find_all_scans_in_room
 from webpage_controller import Scheduler
 
 
@@ -152,6 +152,21 @@ def delete_monitor():
     
     return jsonify({'roomId': monitor_id})
 
+@monitors.route("/get-existing-scans", methods=['GET'])
+@cross_origin()
+def get_existing_scans():
+    monitor_id = request.args.get('monitorId')
+    monitor = find_monitor(monitor_id)
+  
+    if not monitor:
+        abort(make_response(jsonify(message='Monitor dosen\'t exist'), 404))
+    else:
+        scans = find_all_scans_in_room(monitor_id)
+        prepared_scans = [prepare_scan_raport(monitor, scan) for scan in scans]
+
+    return jsonify({'scans': prepared_scans})
+
+
 @monitors.route("/get-scan", methods=['GET'])
 @cross_origin()
 def get_scan():
@@ -165,6 +180,13 @@ def get_scan():
     scan = find_scan(monitor_id, scan_id)
     if not scan:
         abort(make_response(jsonify(message='Scan dosen\'t exist'), 404))
+
+    result = prepare_scan_raport(monitor, scan)
+    return jsonify(result)
+
+def prepare_scan_raport(monitor, scan):
+    scan_id = scan['id']
+    monitor_id = monitor['id']
 
     result = {}
     if monitor['textChange']:
@@ -184,8 +206,8 @@ def get_scan():
         result['deleted_files'] = [cut_path_name(item['fileName']) for item in find_deleted_files(scan_id, monitor_id)]
 
     result['date'] = scan['date']
-
-    return jsonify(result)
+    result['id'] = scan_id
+    return result
 
 def cut_path_name(fileName):
     return re.split(".*static", fileName)[1].replace('//', '/')

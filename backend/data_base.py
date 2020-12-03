@@ -64,6 +64,13 @@ def find_scan(monitor_id, scan_id):
         monitor = cursor.fetchone()
         return monitor
 
+def find_all_scans_in_room(monitor_id):
+    from app import app, mysql
+    with app.app_context():
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT * FROM scans WHERE monitorId = %s AND id > 0', (monitor_id,))
+        return cursor.fetchall()
+
 def find_salt(mail):
     from app import app, mysql
     with app.app_context():

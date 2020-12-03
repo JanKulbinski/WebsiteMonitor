@@ -129,7 +129,7 @@ class Room extends React.Component<PropsType, RoomState> {
         monitorService.getExistingScans(id)
         .then(res => {
             if ('scans' in res.data) {
-                this.setState({ scans: res.data.scans, newestScanId: res.data.scans.length + 1 });
+                this.setState({ scans: res.data.scans.reverse(), newestScanId: res.data.scans.length + 1 });
             }
         })
         .catch(error => {
@@ -152,11 +152,11 @@ class Room extends React.Component<PropsType, RoomState> {
                             keyWordsOccuranceList = parseKeyWordsOccurences(res.data.keyWordsOccurance)
                         }
                         const scan = { ...res.data, id: this.state.newestScanId, isOpen: false, keyWordsOccuranceList: keyWordsOccuranceList };
-                        this.setState({ scans: [...this.state.scans, scan], newestScanId: this.state.newestScanId + 1 });
+                        this.setState({ scans: [scan, ...this.state.scans ], newestScanId: this.state.newestScanId + 1 });
                         
                         addNotification({
-                                title: 'New scan executed!',
-                                message: `Web page: ${this.state.monitor.url} `,
+                                title: 'NEW SCAN',
+                                message: `${this.state.monitor.url} `,
                                 theme: 'darkblue',
                                 native: true // when using native, your OS will handle theming.
                         });
@@ -199,12 +199,13 @@ class Room extends React.Component<PropsType, RoomState> {
     }
 
     toggle = (id: number) => {
+        const index = this.state.scans.length - id
         let scans = [...this.state.scans]
         let scan = {
-            ...scans[id - 1],
-            isOpen: !scans[id - 1].isOpen
+            ...scans[index],
+            isOpen: !scans[index].isOpen
         }
-        scans[id - 1] = scan
+        scans[index] = scan
         this.setState({ scans })
     }
 
