@@ -6,7 +6,7 @@ USE websiteMonitor;
 
 CREATE TABLE users
 (
-  mail            VARCHAR(255) NOT NULL,
+  mail            VARCHAR(150) NOT NULL,
   name            VARCHAR(150) NOT NULL,                
   surname         VARCHAR(150) NOT NULL,
   salt            VARBINARY(32) NOT NULL,                 
@@ -25,8 +25,8 @@ CREATE TABLE monitors
   end 			   	  DATETIME NOT NULL,
   textChange    	  BOOLEAN default FALSE,                 
   allFilesChange 	  BOOLEAN default FALSE,
-  author 			  VARCHAR(255) NOT NULL,
-  mailNotification 	  VARCHAR(255),
+  author 			  VARCHAR(150) NOT NULL,
+  mailNotification 	  VARCHAR(150),
   active 			  BOOLEAN default true,
   FOREIGN KEY (author)
         REFERENCES users(mail)
