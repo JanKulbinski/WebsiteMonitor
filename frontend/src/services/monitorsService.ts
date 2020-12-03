@@ -10,7 +10,8 @@ export const monitorService = {
     deleteMonitor,
     getMonitor,
     getAllUsersMonitors,
-    getScan
+    getScan,
+    getExistingScans
 };
 
 const getHeaders = () => {
@@ -79,6 +80,15 @@ function getScan(monitorId: string, scanId: number) {
         params: {
             monitorId: monitorId,
             scanId: scanId
+        }
+      });
+}
+
+function getExistingScans(monitorId: string) {
+    return axios.get(`${API_URL}${prefix}/get-existing-scans`, {
+        headers: getHeaders(), 
+        params: {
+            monitorId: monitorId
         }
       });
 }

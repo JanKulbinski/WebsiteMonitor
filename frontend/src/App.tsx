@@ -11,10 +11,12 @@ import HomePage from './components/homePage/HomePage'
 import Page404 from './components/Page404'
 import "react-datetime/css/react-datetime.css";
 import Room from './components/room.tsx/Room';
+import { Notifications } from 'react-push-notification';
 
 function App() {
   return (
       <Router>
+        <Notifications />
         <Switch>
         <Route exact path="/">
             <HomePage/>

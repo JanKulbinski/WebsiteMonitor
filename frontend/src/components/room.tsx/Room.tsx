@@ -12,6 +12,7 @@ import styled from 'styled-components';
 import { NewMonitorForm } from '../newMonitorForm/NewMonitorForm';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import addNotification from 'react-push-notification';
 
 
 type PathParamsType = {
@@ -111,6 +112,7 @@ class Room extends React.Component<PropsType, RoomState> {
                 const isLogged = localStorage.getItem('token') ? true : false;
                 this.setState({ monitor: monitor, isMonitorsAuthor: isMonitorsAuthor, isLogged: isLogged, monitorId: id });
                 const { intervalMinutes, start, end } = monitor
+                this.getExistingScans(id)
                 this.setIntervalApiPing(intervalMinutes, start, end, id);
             })
             .catch(error => {
@@ -121,6 +123,19 @@ class Room extends React.Component<PropsType, RoomState> {
 
     componentWillUnmount() {
         clearInterval(this.intervalPing);
+    }
+
+    getExistingScans(id: string) {
+        monitorService.getExistingScans(id)
+        .then(res => {
+            if ('scans' in res.data) {
+                this.setState({ scans: res.data.scans, newestScanId: res.data.scans.length + 1 });
+            }
+        })
+        .catch(error => {
+            const response = get(error.response, 'data', '');
+            console.log(response.msg);
+        });
     }
 
     setIntervalApiPing(intervalMinutes: number, start: string, end: string, monitorId: string) {
@@ -138,6 +153,13 @@ class Room extends React.Component<PropsType, RoomState> {
                         }
                         const scan = { ...res.data, id: this.state.newestScanId, isOpen: false, keyWordsOccuranceList: keyWordsOccuranceList };
                         this.setState({ scans: [...this.state.scans, scan], newestScanId: this.state.newestScanId + 1 });
+                        
+                        addNotification({
+                                title: 'New scan executed!',
+                                message: `Web page: ${this.state.monitor.url} `,
+                                theme: 'darkblue',
+                                native: true // when using native, your OS will handle theming.
+                        });
                     })
                     .catch(error => {
                         const response = get(error.response, 'data', '');
