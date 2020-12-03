@@ -19,15 +19,8 @@ import hashlib
 import constants
 import glob 
 
-def tag_visible(element):
-    if element.parent.name in ['[document]', 'noscript', 'header', 'html', 'meta', 'head', 'input', 'script', 'style']:
-        return False
-    if isinstance(element, Comment):
-        return False
-    return True
-
 class Scheduler:
-    def __init__(self, room_id, start, end, tag, index, keyWords, intervalMinutes, textChange, allFilesChange, author, url, mailNotification, scanId=0):        
+    def __init__(self, room_id, start, end, tag, index, keyWords, interval_minutes, text_change, all_files_change, author, url, mail_notification, scan_id=0):        
         start = datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
         self.start = datetime.timestamp(start)
 
@@ -38,17 +31,17 @@ class Scheduler:
         self.tag = tag.lower()
         self.index = index
         self.keyWords = keyWords
-        self.intervalSeconds = int(intervalMinutes) * 60
-        self.textChange = textChange
-        self.allFilesChange = allFilesChange
+        self.interval_seconds = int(interval_minutes) * 60
+        self.text_change = text_change
+        self.all_files_change = all_files_change
         self.author = author
         self.url = url
-        self.mailNotification = mailNotification
-        self.scanId = scanId
+        self.mail_notification = mail_notification
+        self.scan_id = scan_id
         self.active = True
 
     def get_recreate_properties(self):
-        return self.author, self.index, self.tag, self.url, self.scanId
+        return self.author, self.index, self.tag, self.url, self.scan_id
 
     def run(self):
         self.job_thread = threading.Thread(target=self.work)
@@ -67,37 +60,37 @@ class Scheduler:
     
         while 1:
             now = datetime.timestamp(datetime.now())
-            if now >= self.end or (not self.textChange and not self.allFilesChange) or not self.active:
-                deactivate_monitor(self.room_id)
+            if now >= self.end or (not self.text_change and not self.all_files_change) or not self.active:
                 print(f"MONITOR {self.room_id} has ended {datetime.now()}")
                 return
 
             mail_content = ''
-            if self.textChange:
+            if self.text_change:
                 self.download_and_save_text_from_html(driver)
-                if self.scanId:
+                if self.scan_id:
                     is_diffrence, key_words_result, mail_content = self.compare_text_and_generate_html()
-                    insert_scan(self.scanId, self.room_id, is_diffrence, key_words_result)
+                    insert_scan(self.scan_id, self.room_id, is_diffrence, key_words_result)
 
-            if self.allFilesChange:
+            if self.all_files_change:
                 self.compare_all_files()
-                mail_content = generate_all_files_mail(self.scanId, self.room_id) + mail_content
+                if self.mail_notification:
+                    mail_content = generate_all_files_mail(self.scan_id, self.room_id) + mail_content
 
-            if mail_content and self.mailNotification:
+            if mail_content and self.mail_notification:
                 self.send_mail(mail_content)
 
-            self.scanId += 1
-            time.sleep(self.intervalSeconds)
+            self.scan_id += 1
+            time.sleep(self.interval_seconds)
 
     def compare_text_and_generate_html(self):
-        filepath_old = f'{PATH_TO_SAVE_OlD_HTMLS}\{self.room_id}-{self.scanId - 1}.txt'
-        filepath = f'{PATH_TO_SAVE_OlD_HTMLS}\{self.room_id}-{self.scanId}.txt'
-        diffspath = f'{PATH_TO_SAVE_DIFFS}\{self.room_id}-{self.scanId}.html'
+        filepath_old = f'{PATH_TO_SAVE_OlD_HTMLS}\{self.room_id}-{self.scan_id - 1}.txt'
+        filepath = f'{PATH_TO_SAVE_OlD_HTMLS}\{self.room_id}-{self.scan_id}.txt'
+        diffspath = f'{PATH_TO_SAVE_DIFFS}\{self.room_id}-{self.scan_id}.html'
 
         file_old = open(filepath_old, encoding="utf8").readlines()
         file_new = open(filepath,encoding="utf8").readlines()
 
-        # key words
+        # key words search
         key_words = self.keyWords.split(';')
         words_occurences = {}
         line_delimiter = '#$@'
@@ -110,7 +103,7 @@ class Scheduler:
                         words_occurences[word] = line + ' ' + str(index) + line_delimiter
         
         # html
-        old_scan_name = datetime.now() - timedelta(seconds=self.intervalSeconds)
+        old_scan_name = datetime.now() - timedelta(seconds=self.interval_seconds)
         new_scan_name = datetime.now()
 
         diff = difflib.HtmlDiff(wrapcolumn=50).make_file(file_old, file_new, old_scan_name, new_scan_name)
@@ -144,11 +137,11 @@ class Scheduler:
                 <b style="color:rgb(95, 95, 86);">{number_of_line}</b> \
                 <span style="color:rgb(95, 95, 86);">{" ".join(line)}</span>'
 
-        mail_content =  key_words_to_mail + diff
+        mail_content =  key_words_to_mail + diff + '<br>'
         return is_diffrence, key_words_result, mail_content
 
     def download_and_save_text_from_html(self, driver):
-        flag = self.scanId
+        flag = self.scan_id
         driver.get(self.url)
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
@@ -179,8 +172,8 @@ class Scheduler:
         download_whole_page(self.url)
         project_path = get_project_path(self.url)
 
-        if not self.textChange or not find_scan(self.room_id, self.scanId):
-            insert_scan(self.scanId, self.room_id, False)
+        if not self.text_change or not find_scan(self.room_id, self.scan_id):
+            insert_scan(self.scan_id, self.room_id, False)
 
         files = glob.glob(f'{project_path}/**/*', recursive=True) 
         for file_name in files:
@@ -188,16 +181,16 @@ class Scheduler:
                 continue
             new_hash = self.generate_hash(file_name)
             
-            if self.scanId:
-                old_file = find_file(file_name, self.scanId - 1, self.room_id)                 
+            if self.scan_id:
+                old_file = find_file(file_name, self.scan_id - 1, self.room_id)                 
                 status = FileStatus.OLD.value
                 if not old_file:
                     status = FileStatus.NEW.value
                 elif old_file['fileHash'] != new_hash:
                     status = FileStatus.MODIFIED.value
-                insert_file(self.scanId, self.room_id, new_hash, file_name, status)
+                insert_file(self.scan_id, self.room_id, new_hash, file_name, status)
             else:
-                insert_file(self.scanId, self.room_id, new_hash, file_name, FileStatus.NEW.value)
+                insert_file(self.scan_id, self.room_id, new_hash, file_name, FileStatus.NEW.value)
         
         delete_folder(self.url)
 
@@ -214,7 +207,7 @@ class Scheduler:
         from flask_mail import Message
 
         with app.app_context():
-            adress_mail = self.mailNotification
+            adress_mail = self.mail_notification
             message = Message(f"Change detected on WebsiteMonitor for {adress_mail}.", recipients=[adress_mail])
             body = f'<h1 style="color:black">Monitor Raport for {self.url}</h1>' + body
             message.html = body
@@ -234,3 +227,10 @@ def generate_all_files_mail(scan_id, monitor_id):
 
 def cut_path_name(fileName):
     return re.split(".*static", fileName)[1].replace('//', '/')
+
+def tag_visible(element):
+    if element.parent.name in ['[document]', 'noscript', 'header', 'html', 'meta', 'head', 'input', 'script', 'style']:
+        return False
+    if isinstance(element, Comment):
+        return False
+    return True
