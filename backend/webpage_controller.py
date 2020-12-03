@@ -3,7 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 from constants import PATH_TO_SAVE_OlD_HTMLS, PATH_TO_SAVE_DIFFS, PATH_TO_HEADLESS_WEB_BROWSER
-from data_base import insert_scan, find_file, insert_file, find_scan, deactivate_monitor
+from data_base import insert_scan, find_file, insert_file, find_scan, deactivate_monitor, find_changed_files, find_deleted_files
 from datetime import datetime, timedelta
 from monitors_helpers import download_whole_page, get_project_path, delete_folder
 from enums import FileStatus
@@ -64,7 +64,7 @@ class Scheduler:
         now = datetime.timestamp(datetime.now())
         if now < self.start:
             time.sleep((self.start-now) + 1)
-
+    
         while 1:
             now = datetime.timestamp(datetime.now())
             if now >= self.end or (not self.textChange and not self.allFilesChange) or not self.active:
@@ -72,14 +72,19 @@ class Scheduler:
                 print(f"MONITOR {self.room_id} has ended {datetime.now()}")
                 return
 
+            mail_content = ''
             if self.textChange:
                 self.download_and_save_text_from_html(driver)
                 if self.scanId:
-                    is_diffrence, key_words_result = self.compare_text_and_generate_html()
+                    is_diffrence, key_words_result, mail_content = self.compare_text_and_generate_html()
                     insert_scan(self.scanId, self.room_id, is_diffrence, key_words_result)
 
             if self.allFilesChange:
                 self.compare_all_files()
+                mail_content = generate_all_files_mail(self.scanId, self.room_id) + mail_content
+
+            if mail_content and self.mailNotification:
+                self.send_mail(mail_content)
 
             self.scanId += 1
             time.sleep(self.intervalSeconds)
@@ -92,6 +97,7 @@ class Scheduler:
         file_old = open(filepath_old, encoding="utf8").readlines()
         file_new = open(filepath,encoding="utf8").readlines()
 
+        # key words
         key_words = self.keyWords.split(';')
         words_occurences = {}
         line_delimiter = '#$@'
@@ -103,7 +109,7 @@ class Scheduler:
                     else: 
                         words_occurences[word] = line + ' ' + str(index) + line_delimiter
         
-
+        # html
         old_scan_name = datetime.now() - timedelta(seconds=self.intervalSeconds)
         new_scan_name = datetime.now()
 
@@ -115,10 +121,31 @@ class Scheduler:
         is_diffrence = not filecmp.cmp(filepath_old, filepath)
         word_delimiter = '!%^'
         key_words_result = ''
+
+        if is_diffrence:
+            diff = '<b style="border-bottom: solid 1px rgba(0, 0, 0, .125);">Text changes</b>' + diff
+        else:
+            diff = ''
+
+        key_words_to_mail = ''
+        if len(words_occurences) > 0:
+            key_words_to_mail = '<b color="black" style="border-bottom: solid 1px rgba(0, 0, 0, .125);">Key words occurences</b><br>'
+
         for word, line in words_occurences.items():
             key_words_result += word + line_delimiter + line + word_delimiter 
+            occurences = line.split(line_delimiter)
+            key_words_to_mail += f'<b style="color:rgb(252, 212, 137);">{word}</b><br>'
 
-        return is_diffrence, key_words_result
+            for occur in occurences:
+                occur = occur.split(' ')
+                line = occur[:-1]
+                number_of_line = occur[-1]
+                key_words_to_mail += f'\
+                <b style="color:rgb(95, 95, 86);">{number_of_line}</b> \
+                <span style="color:rgb(95, 95, 86);">{" ".join(line)}</span>'
+
+        mail_content =  key_words_to_mail + diff
+        return is_diffrence, key_words_result, mail_content
 
     def download_and_save_text_from_html(self, driver):
         flag = self.scanId
@@ -174,11 +201,36 @@ class Scheduler:
         
         delete_folder(self.url)
 
-
-
     def generate_hash(self, file_name):                   
         with open(file_name, "rb") as f:
             file_hash = hashlib.blake2b(digest_size=32)
             while chunk := f.read(8192):
                 file_hash.update(chunk)
         return file_hash.digest()
+
+
+    def send_mail(self, body):
+        from app import app, mail
+        from flask_mail import Message
+
+        with app.app_context():
+            adress_mail = self.mailNotification
+            message = Message(f"Change detected on WebsiteMonitor for {adress_mail}.", recipients=[adress_mail])
+            body = f'<h1 style="color:black">Monitor Raport for {self.url}</h1>' + body
+            message.html = body
+            mail.send(message)
+            print('MAIL SEND!')
+
+
+def generate_all_files_mail(scan_id, monitor_id):
+    new_files = [f'<p  style="color:rgb(49, 211, 49); text-decoration:none"> + {cut_path_name(item["fileName"])}</p>' for item in find_changed_files(scan_id, monitor_id, FileStatus.NEW.value)]
+    changed_files = [f'<p  style="color:rgb(95, 95, 86); text-decoration:none"> ~ {cut_path_name(item["fileName"])}</p>' for item in find_changed_files(scan_id, monitor_id, FileStatus.MODIFIED.value)]
+    deleted_files = [f'<p  style="rgb(197, 37, 37); text-decoration:none"> - {cut_path_name(item["fileName"])}</p>' for item in find_deleted_files(scan_id, monitor_id)]
+
+    mail_content = '<b style="color:black; border-bottom: solid 1px rgba(0, 0, 0, .125);">Files changes</b>'
+    if new_files or changed_files or deleted_files:
+        mail_content += ' '.join(new_files) + ' '.join(changed_files) + ' '.join(deleted_files)
+    return mail_content
+
+def cut_path_name(fileName):
+    return re.split(".*static", fileName)[1].replace('//', '/')
