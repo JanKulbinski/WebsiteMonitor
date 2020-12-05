@@ -41,7 +41,7 @@ def create_monitor():
         abort(make_response(jsonify(message="Session expired"), 401))
 
     data = request.get_json()
-    if not ('start' in data and 'end' in data and 'choosenElement' in data and 'intervalMinutes' in data and 'url' in data):
+    if not is_data_valid(data):
         abort(make_response(jsonify(message='Invalid form'), 400))
     
     start = data['start']
@@ -58,14 +58,20 @@ def create_monitor():
     url = data['url']
     room_id = uuid.uuid4().hex
 
-    insert_monitor(room_id, url, choosenElement, keyWords, intervalMinutes, start, end, textChange, allFilesChange, author, mailNotification)
+    insert_monitor(room_id, url, choosenElement, keyWords, intervalMinutes, start, end,
+     textChange, allFilesChange, author, mailNotification)
     delete_folder(url)
 
-    worker = Scheduler(room_id, start, end, tag, index, keyWords, intervalMinutes, textChange, allFilesChange, author, url, mailNotification)
+    worker = Scheduler(room_id, start, end, tag, index, keyWords, intervalMinutes,
+     textChange, allFilesChange, author, url, mailNotification)
     workers[room_id] = worker
     worker.run()
     
     return jsonify({'roomId': room_id})
+
+def is_data_valid(data):
+    return ('start' in data and 'end' in data and 'choosenElement' in data and 
+    'intervalMinutes' in data and 'url' in data)
 
 @monitors.route("/get-monitor", methods=['GET'])
 @cross_origin()

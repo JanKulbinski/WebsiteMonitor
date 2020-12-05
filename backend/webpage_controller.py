@@ -201,7 +201,6 @@ class Scheduler:
                 file_hash.update(chunk)
         return file_hash.digest()
 
-
     def send_mail(self, body):
         from app import app, mail
         from flask_mail import Message
@@ -213,7 +212,6 @@ class Scheduler:
             message.html = body
             mail.send(message)
             print('MAIL SEND!')
-
 
 def generate_all_files_mail(scan_id, monitor_id):
     new_files = [f'<p  style="color:rgb(49, 211, 49); text-decoration:none"> + {cut_path_name(item["fileName"])}</p>' for item in find_changed_files(scan_id, monitor_id, FileStatus.NEW.value)]
