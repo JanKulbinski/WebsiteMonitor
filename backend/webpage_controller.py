@@ -96,7 +96,7 @@ class Scheduler:
         line_delimiter = '#$@'
         for index, line in enumerate(file_new):
             for word in key_words:
-                if word in line:
+                if word and word in line:
                     if word in words_occurences:
                         words_occurences[word] += line + ' ' + str(index) + line_delimiter
                     else: 

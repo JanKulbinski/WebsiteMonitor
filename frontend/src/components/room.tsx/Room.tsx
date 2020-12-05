@@ -6,13 +6,13 @@ import { get } from 'lodash';
 import { monitorService } from '../../services/monitorsService';
 import { Monitor, Scan } from '../../shared/types';
 import { StyledButton } from '../../shared/BasicElements';
-import { Card, Button, Collapse, Modal } from 'react-bootstrap';
+import { Card, Collapse, Modal } from 'react-bootstrap';
 import { FaExchangeAlt, FaClipboardCheck, FaFilePdf } from 'react-icons/fa';
 import styled from 'styled-components';
-import { NewMonitorForm } from '../newMonitorForm/NewMonitorForm';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import addNotification from 'react-push-notification';
+import { ManageRoom } from './ManageRoom';
 
 
 type PathParamsType = {
@@ -304,75 +304,27 @@ class Room extends React.Component<PropsType, RoomState> {
         })
     }
 
-    handleManageClose = () => {
-        this.setState({ manageVisible: false })
+    handleManageSubmit = (monitor:Monitor) => {
+        this.setState({monitor});
+        const { intervalMinutes, start, end } = monitor
+        clearInterval(this.intervalPing)
+        this.setIntervalApiPing(intervalMinutes, start, end, this.state.monitorId);
+
+        alert(`Monitor ${this.state.monitorId} changed!`)
+        console.log(`Monitor ${this.state.monitorId} changed!`)
     }
 
     handleManageOpen = () => {
-        this.setState({ manageVisible: true })
+        this.setState({ manageVisible: true });
     }
 
-    handleMonitorDelete = () => {
-        monitorService.deleteMonitor(this.state.monitorId)
-            .then(res => {
-                this.props.history.push({
-                    pathname: `/all-monitors`
-                });
-            })
-            .catch(error => {
-                const response = get(error.response, 'data', '');
-                alert(response.msg)
-                console.log(response.msg);
-            });
-
-
-    }
-
-    handleSubmit = (monitor: Monitor) => {
-
-        monitorService.updateMonitor(monitor)
-            .then(res => {
-                const data = get(res, 'data', '');
-                const roomId = data ? data.roomId : '';
-
-                alert(`Monitor ${roomId} changed!`)
-                console.log(`Monitor ${roomId} changed!`)
-
-                this.setState({ monitor: monitor });
-                const { intervalMinutes, start, end } = monitor
-
-                clearInterval(this.intervalPing)
-                this.setIntervalApiPing(intervalMinutes, start, end, this.state.monitorId);
-            })
-            .catch(error => {
-                const response = get(error.response, 'data', '');
-                alert(response.msg)
-                console.log(response.msg);
-            });
-
-        this.handleManageClose()
-    }
-
-    getManageModal() {
-        return (
-            <Modal show={this.state.manageVisible} onHide={this.handleManageClose} size="xl" centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Manage</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <NewMonitorForm onSubmitClick={this.handleSubmit} monitor={this.state.monitor}></NewMonitorForm>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="danger" onClick={this.handleMonitorDelete}>Delete monitor</Button>
-                </Modal.Footer>
-            </Modal>
-        )
+    handleManageClose = () => {
+        this.setState({ manageVisible: false });
     }
 
     render() {
         return (
             <div className='row'>
-                {this.getManageModal()}
                 <Modal show={this.state.modalVisible} onHide={this.handleModalClose} size="xl" centered>
                     <Modal.Header closeButton>
                         <Modal.Title>Htmls comparsion</Modal.Title>
@@ -399,6 +351,9 @@ class Room extends React.Component<PropsType, RoomState> {
                     <header>
                         <h1>{this.state.monitor.url}</h1>
                     </header>
+                    <ManageRoom monitorId={this.state.monitorId} monitor={this.state.monitor} 
+                    onSubmitClick={this.handleManageSubmit} isVisible={this.state.manageVisible}
+                    onManageClose={this.handleManageClose}/>
                     {this.state.isMonitorsAuthor &&
                         <div className='manageWrapper'>
                             <StyledButton onClick={this.handleManageOpen}>Manage</StyledButton>

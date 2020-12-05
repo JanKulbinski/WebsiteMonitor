@@ -63,8 +63,8 @@ const emptyMonitor = {
 
 const convertTimeInMonitor = (monitor: Monitor) => {
     const { start, end } = monitor;
-    const startDate = new Date(Date.parse(start)).toISOString().slice(0, 19).replace('T', ' ')
-    const endDate = new Date(Date.parse(end)).toISOString().slice(0, 19).replace('T', ' ')
+    const startDate = new Date(Date.parse(start) + 60*60*1000).toISOString().slice(0, 19).replace('T', ' ')
+    const endDate = new Date(Date.parse(end) + 60*60*1000).toISOString().slice(0, 19).replace('T', ' ')
 
     const convertedStart = `${startDate.slice(5, 7)}/${startDate.slice(8, 10)}/${startDate.slice(0, 4)} ${startDate.slice(10)}`
     const convertedEnd = `${endDate.slice(5, 7)}/${endDate.slice(8, 10)}/${endDate.slice(0, 4)} ${endDate.slice(10)}`
