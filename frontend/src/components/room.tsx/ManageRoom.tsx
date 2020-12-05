@@ -42,8 +42,6 @@ export function ManageRoom ({monitorId, monitor, isVisible, onSubmitClick, onMan
         onManageClose()
         monitorService.updateMonitor(monitor)
             .then(res => {
-                const data = get(res, 'data', '');
-                const roomId = data ? data.roomId : '';
                 onSubmitClick(monitor)
             })
             .catch(error => {

@@ -1,19 +1,16 @@
 import React from 'react';
 import { MyNavbar } from '../../shared/navbar/Nabar';
-import './Room.scss'
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { get } from 'lodash';
 import { monitorService } from '../../services/monitorsService';
 import { Monitor, Scan } from '../../shared/types';
 import { StyledButton } from '../../shared/BasicElements';
-import { Card, Collapse, Modal } from 'react-bootstrap';
-import { FaExchangeAlt, FaClipboardCheck, FaFilePdf } from 'react-icons/fa';
+import { Modal } from 'react-bootstrap';
 import styled from 'styled-components';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import addNotification from 'react-push-notification';
 import { ManageRoom } from './ManageRoom';
-
+import { ScanCard } from './ScanCard';
+import './Room.scss'
 
 type PathParamsType = {
     id: string
@@ -66,14 +63,6 @@ export const DiffButton = styled.button`
         cursor: pointer;
     }
 `
-
-
-const changeDetect = (scan: Scan) => {
-    return ((scan.changed_files && scan.changed_files.length) ||
-        (scan.new_files && scan.new_files.length) ||
-        (scan.deleted_files && scan.deleted_files.length) ||
-        scan.isDiffrence)
-};
 
 const parseKeyWordsOccurences = (keyWords: string) => {
     const words = keyWords.split('!%^');
@@ -142,6 +131,7 @@ class Room extends React.Component<PropsType, RoomState> {
         const startDate = Date.parse(start);
         const endDate = Date.parse(end);
         const miliseconds = intervalMinutes * 60 * 1000
+
         this.intervalPing = setInterval(async () => {
             const now = Date.now()
             if (now > startDate && now < endDate) {
@@ -153,12 +143,12 @@ class Room extends React.Component<PropsType, RoomState> {
                         }
                         const scan = { ...res.data, id: this.state.newestScanId, isOpen: false, keyWordsOccuranceList: keyWordsOccuranceList };
                         this.setState({ scans: [scan, ...this.state.scans ], newestScanId: this.state.newestScanId + 1 });
-                        
+         
                         addNotification({
                                 title: 'NEW SCAN',
                                 message: `${this.state.monitor.url} `,
                                 theme: 'darkblue',
-                                native: true // when using native, your OS will handle theming.
+                                native: true
                         });
                     })
                     .catch(error => {
@@ -169,36 +159,9 @@ class Room extends React.Component<PropsType, RoomState> {
                 clearInterval(this.intervalPing)
             }
         }, miliseconds)
-
     }
 
-    handlePDF = (id: string, date: string, url: string) => {
-        const div = document.getElementById(id);
-        if (div) {
-            html2canvas(div).then((canvas) => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF();
-
-                pdf.setFontSize(25);
-                pdf.setFont("times", "bold");
-                pdf.text(10, 20, this.state.monitor.url)
-
-                pdf.setFontSize(10);
-                pdf.text(10, 30, date)
-
-                if (url !== 'noPath') {
-                    pdf.text(`Link to HTML comparsion:`, 10, 50);
-                    pdf.setTextColor(52, 29, 145);
-                    pdf.text(url, 10, 54);
-                }
-
-                pdf.addImage(imgData, 'PNG', 10, 60);
-                pdf.save(`scan-${date.slice(5, -3)}.pdf`);
-            });
-        }
-    }
-
-    toggle = (id: number) => {
+    handleToggle = (id: number) => {
         const index = this.state.scans.length - id
         let scans = [...this.state.scans]
         let scan = {
@@ -220,96 +183,11 @@ class Room extends React.Component<PropsType, RoomState> {
         this.setState({ modalVisible: true, iframeUrl: url })
     }
 
-    getCards() {
-        return this.state.scans.map((value, index) => {
-            return (
-                <div id='cardsWrapper'>
-                    <Card>
-                        <Card.Header
-                            onClick={() => this.toggle(value.id)}
-                            aria-controls="example-collapse-text"
-                            aria-expanded={value.isOpen}>
-                            <div className="header">
-                                {changeDetect(value) ?
-                                    <FaExchangeAlt style={{ color: 'green' }}></FaExchangeAlt>
-                                    : <FaClipboardCheck></FaClipboardCheck>
-                                }
-                                <p>{value.date}</p>
-                            </div>
-                        </Card.Header>
-                        <Collapse in={value.isOpen}>
-                            <Card.Body >
-                                <Card.Text id="example-collapse-text">
-                                    <div className="h2-wrapper">
-                                        <h2>Monitor Raport</h2>
-                                    </div>
-                                    <div id={`pdf-${index}`}>
-
-                                        <div className="body">
-                                            <div className="title">
-                                                <b>Files changes</b>
-                                            </div>
-                                            {value.new_files && value.new_files.map((name) => (<p className="new">+ {name}</p>))}
-                                            {value.changed_files && value.changed_files.map((name) => (<p className="modified">~ {name}</p>))}
-                                            {value.deleted_files && value.deleted_files.map((name) => (<p className="deleted">- {name}</p>))}
-                                        </div>
-
-                                        <div className="body">
-                                            <div className="title">
-                                                <b>Key words occurences</b>
-                                            </div>
-                                            {value.keyWordsOccuranceList && value.keyWordsOccuranceList.map((name) => {
-                                                return (
-                                                    <React.Fragment>
-                                                        <p className="key-word"> {name[0]}</p>
-                                                        {name.slice(1).map((line) => {
-                                                            const lineNumber = line.split(" ").splice(-1)[0]
-                                                            const lastIndex = line.lastIndexOf(" ");
-                                                            const lineCut = line.substring(0, lastIndex);
-                                                            return (
-                                                                <span>
-                                                                    <i>
-                                                                        {lineNumber}
-                                                                    </i>
-                                                                    <p className="modified">{lineCut}</p>
-                                                                </span>
-                                                            )
-                                                        })}
-                                                    </React.Fragment>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-
-                                    <div className="body">
-                                        <div className="title">
-                                            <b>Text changes</b>
-                                        </div>
-                                        {
-                                            value.isDiffrence > 0 && (
-                                            <div className="buttons">
-                                                <DiffButton onClick={() => this.handleModalOpen(value.raportPath)}>Check out text difference</DiffButton>
-                                                <DiffButton onClick={() => this.handlePDF(`pdf-${index}`, value.date, value.raportPath)}>Generate PDF <FaFilePdf></FaFilePdf></DiffButton>
-                                            </div>
-                                            )
-                                        }
-
-                                    </div>
-                                </Card.Text>
-                            </Card.Body>
-                        </Collapse>
-                    </Card>
-                </div>
-            )
-        })
-    }
-
     handleManageSubmit = (monitor:Monitor) => {
         this.setState({monitor});
         const { intervalMinutes, start, end } = monitor
         clearInterval(this.intervalPing)
         this.setIntervalApiPing(intervalMinutes, start, end, this.state.monitorId);
-
         alert(`Monitor ${this.state.monitorId} changed!`)
         console.log(`Monitor ${this.state.monitorId} changed!`)
     }
@@ -360,7 +238,9 @@ class Room extends React.Component<PropsType, RoomState> {
                         </div>
                     }
 
-                    {this.getCards()}
+                    { this.state.scans.map((value, index) => 
+                     <ScanCard value={value} index={index} monitorUrl={this.state.monitor.url} onToggle={this.handleToggle} onModalOpen={this.handleModalOpen} />
+                     )}
                 </main>
             </div>
         );
