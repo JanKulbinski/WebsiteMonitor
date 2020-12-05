@@ -1,13 +1,14 @@
 import React from 'react';
-import './HomePage.scss'
 import { StyledLink, StyledButton } from '../../shared/BasicElements'
 import { FaArrowRight, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
 import { authService } from '../../services/authService';
 import { UserPasses, User } from '../../shared/types';
+import { RegisterWindow } from '../loginAndRegister/Register';
+import { LoginWindow } from '../loginAndRegister/Login';
 import Loader from 'react-loader-spinner'
-
-import { RegisterWindow, LoginWindow } from '../loginAndRegister/loginAndRegister';
 import get from 'lodash/get';
+import './HomePage.scss'
+
 
 type HomeState = {
     leftPanel: {
@@ -36,15 +37,14 @@ const changeLeftPanelState = (panelToTurnOn: string) => {
 }
 
 export default class HomePage extends React.Component<{}, HomeState> {
-
+   
     constructor(props: {}) {
         super(props)
         const isLogged = localStorage.getItem('isLogged') ? true : false;
-        const state = { leftPanel: { register: false, login: false, loading: false, error: false }, isLogged: isLogged, errorMessage: '' };
-        this.state = state;
+        this.state = { leftPanel: { register: false, login: false, loading: false, error: false }, isLogged: isLogged, errorMessage: '' };
     }
 
-    logInUser = (mail:string, token:string) => {
+    logInUser = (mail: string, token: string) => {
         this.setState({ leftPanel: changeLeftPanelState(''), isLogged: true });
         localStorage.setItem('isLogged', 'true');
         localStorage.setItem('mail', mail);
@@ -56,7 +56,7 @@ export default class HomePage extends React.Component<{}, HomeState> {
     handleRegister = (user: User) => {
         this.setState({ leftPanel: changeLeftPanelState('loading') });
         authService.register(user).then((response) => {
-            this.logInUser(user.mail,response.data.token)
+            this.logInUser(user.mail, response.data.token)
         }).catch(error => {
             const response = get(error.response, 'data', '');
             this.setState({ leftPanel: changeLeftPanelState('error'), errorMessage: response.message })
@@ -67,7 +67,7 @@ export default class HomePage extends React.Component<{}, HomeState> {
     handleLogin = (userPasses: UserPasses) => {
         this.setState({ leftPanel: changeLeftPanelState('loading') })
         authService.login(userPasses).then((response) => {
-            this.logInUser(userPasses.mail,response.data.token)
+            this.logInUser(userPasses.mail, response.data.token)
         }).catch(error => {
             const response = get(error.response, 'data', '');
             this.setState({ leftPanel: changeLeftPanelState('error'), errorMessage: response.message })

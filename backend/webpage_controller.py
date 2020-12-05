@@ -135,7 +135,7 @@ class Scheduler:
                 number_of_line = occur[-1]
                 key_words_to_mail += f'\
                 <b style="color:rgb(95, 95, 86);">{number_of_line}</b> \
-                <span style="color:rgb(95, 95, 86);">{" ".join(line)}</span>'
+                <span style="color:rgb(95, 95, 86);">{" ".join(line)}</span><br>'
 
         mail_content =  key_words_to_mail + diff + '<br>'
         return is_diffrence, key_words_result, mail_content

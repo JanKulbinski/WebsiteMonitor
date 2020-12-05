@@ -34,7 +34,6 @@ export const MyNavbar = ({componentId}: Props) => {
 
     return (
         <React.Fragment>
-
             <Navbar expand="lg" className="d-lg-none navbar-custom">
                 <Navbar.Brand>Website Monitor</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />

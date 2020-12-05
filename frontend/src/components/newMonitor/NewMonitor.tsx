@@ -60,7 +60,7 @@ class NewMonitor extends React.Component<RouteComponentProps, NewMonitorState> {
     }
 
     handleGo = () => {
-       monitorService.getPageToMonitor(this.state.iFrameInput).then(response => {
+        monitorService.getPageToMonitor(this.state.iFrameInput).then(response => {
             const data = get(response, 'data', '');
             const url = data ? data.location : '';
             this.setState({ iFrameUrl: url, isFrameLoading: false, isFrameLoaded: true })
@@ -92,7 +92,7 @@ class NewMonitor extends React.Component<RouteComponentProps, NewMonitorState> {
                 color="#0e0700"
                 height={150}
                 width={150}
-         />
+            />
         } else if (isFrameLoaded) {
             result = <iframe title="Inline Frame Example" src={this.state.iFrameUrl}></iframe>
         }
@@ -105,9 +105,9 @@ class NewMonitor extends React.Component<RouteComponentProps, NewMonitorState> {
     }
 
     handleSubmitClick = (monitor: Monitor) => {
-        const {iFrameInput, index, tag} = this.state;
+        const { iFrameInput, index, tag } = this.state;
 
-        monitorService.createMonitor({...monitor, url:iFrameInput, choosenElement:{tag:tag ? tag : 'default', index:index}})
+        monitorService.createMonitor({ ...monitor, url: iFrameInput, choosenElement: { tag: tag ? tag : 'default', index: index } })
             .then(res => {
                 const data = get(res, 'data', '');
                 const roomId = data ? data.roomId : '';

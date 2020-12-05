@@ -25,20 +25,20 @@ const Label = styled.label`
 const CheckBoxLabel = styled(Label)`
     margin-right:10px;
 
-` 
+`
 const Input = styled.input`
-height: calc(1.5em + .75rem + 2px);
-padding: .375rem .75rem !important;
-font-size: 1rem;
-font-weight: 400;
-line-height: 1.5;
-color: #495057;
-background-color: #fff;
-background-clip: padding-box;
-border: 1px solid #ced4da;
-border-radius: .25rem;
-transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-padding: 5px;
+    height: calc(1.5em + .75rem + 2px);
+    padding: .375rem .75rem !important;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    padding: 5px;
 `
 const CreateButton = styled(StyledButton)`
     width:30%
@@ -57,8 +57,8 @@ const emptyMonitor = {
     author: localStorage.getItem('mail') || '',
     mailNotification: localStorage.getItem('mail') || '',
     url: '',
-    startInitial:'',
-    endInitial:''
+    startInitial: '',
+    endInitial: ''
 }
 
 const convertTimeInMonitor = (monitor: Monitor) => {
@@ -69,7 +69,7 @@ const convertTimeInMonitor = (monitor: Monitor) => {
     const convertedStart = `${startDate.slice(5, 7)}/${startDate.slice(8, 10)}/${startDate.slice(0, 4)} ${startDate.slice(10)}`
     const convertedEnd = `${endDate.slice(5, 7)}/${endDate.slice(8, 10)}/${endDate.slice(0, 4)} ${endDate.slice(10)}`
 
-    const monitorWithInitials = { ...monitor, start:startDate, end:endDate, startInitial: convertedStart, endInitial: convertedEnd }
+    const monitorWithInitials = { ...monitor, start: startDate, end: endDate, startInitial: convertedStart, endInitial: convertedEnd }
     return monitorWithInitials
 }
 

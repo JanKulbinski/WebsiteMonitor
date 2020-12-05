@@ -28,5 +28,3 @@ app.register_blueprint(monitors)
 if __name__ == '__main__':
     app.run(debug=True)
     init_workers()
-    # TO DO 
-    # gdy apka wstaje niech startuje wszystki workerow z bazy danych

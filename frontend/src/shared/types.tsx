@@ -45,4 +45,11 @@ export interface Scan {
     date: string,
 }
 
+export interface MonitorCardType {
+    active: boolean,
+    end: string,
+    start: string,
+    url: string,
+    id: string,
+};
 
