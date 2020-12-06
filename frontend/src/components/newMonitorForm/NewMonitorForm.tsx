@@ -100,27 +100,22 @@ export function NewMonitorForm({ onSubmitClick, monitor }: monitorProps) {
     }
 
     const handleSubmit = () => {
-
-        // TODO: Validation
-
-        /*  let mailMsg = '';
-          let passMsg = '';
+        // TODO: alert to prettier info method
   
-          if (loginValue.mail === '')
-              mailMsg = "Empty field"
-          else if (!loginValue.mail.includes('@'))
-              mailMsg = "Lack of @"
-  
-          if (loginValue.password === '')
-              passMsg = "Empty field"
-  
-          if (mailMsg === '' && passMsg === '') {
-              onSubmitClick(loginValue);
-          } else {
-              setLoginValue({ ...loginValue, mailError: mailMsg, passwordError: passMsg })
-          }*/
+          if (monitorValue.start === '' || monitorValue.end === '') {
+              alert('Empty date!')
+              return
+          }
+          if (!monitorValue.textChange && !monitorValue.allFilesChange) {
+              alert('Any of scans type is selected!')
+              return
+          }
+         
+          if (!monitorValue.intervalMinutes || isNaN(monitorValue.intervalMinutes)) {
+              alert('Wrong interval minutes')
+              return
+          }
         onSubmitClick(monitorValue);
-
     }
 
     return (
@@ -142,7 +137,6 @@ export function NewMonitorForm({ onSubmitClick, monitor }: monitorProps) {
                             onChange={handleOnChangeCheckbox}
                         />
                     </div>
-
                 </div>
                 <div className="row align-items-baseline py-2 ">
                     <Label className='col-lg-1 col-12'>End time</Label>
