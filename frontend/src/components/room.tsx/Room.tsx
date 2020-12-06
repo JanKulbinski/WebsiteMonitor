@@ -117,8 +117,17 @@ class Room extends React.Component<PropsType, RoomState> {
     getExistingScans(id: string) {
         monitorService.getExistingScans(id)
         .then(res => {
-            if ('scans' in res.data) {
-                this.setState({ scans: res.data.scans.reverse(), newestScanId: res.data.scans.length + 1 });
+            if ('scans' in res.data) {                
+                const scansArray:Scan[] = []
+                res.data.scans.forEach((scanElement: Scan) => {
+                    let keyWordsOccuranceList;
+                    if ('keyWordsOccurance' in scanElement) {
+                        keyWordsOccuranceList = parseKeyWordsOccurences(scanElement.keyWordsOccurance)
+                        const newScan = { ...scanElement, isOpen: false, keyWordsOccuranceList: keyWordsOccuranceList };
+                        scansArray.unshift(newScan)
+                    }
+                });
+                this.setState({ scans: scansArray, newestScanId: res.data.scans.length + 1 });
             }
         })
         .catch(error => {
