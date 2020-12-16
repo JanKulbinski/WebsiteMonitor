@@ -86,7 +86,7 @@ def get_monitor():
 
         return jsonify({'monitor': monitor})
 
-@monitors.route("/get-users-monitors", methods=['GET'])
+@monitors.route("/get-user-monitors", methods=['GET'])
 @cross_origin()
 def get_monitors_by_user():
     user_mail = decode_token(request.headers.get('Authorization')).get('identity')

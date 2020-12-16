@@ -60,7 +60,7 @@ function getMonitor(monitorId: string) {
 }
 
 function getAllUsersMonitors() {
-    return axios.get(`${API_URL}${prefix}/get-users-monitors`, {
+    return axios.get(`${API_URL}${prefix}/get-user-monitors`, {
         headers: getHeaders()
       });
 }
