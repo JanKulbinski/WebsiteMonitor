@@ -2,7 +2,7 @@
 .window {
     background-color: $half-transparent-beige;
     width: 80%;
-    font-size: 1.25rem;
+    font-size: 1rem;
     padding: 10px 0 25px;
     margin-bottom: 20px;
     position: relative;
@@ -43,5 +43,14 @@
         top: 10px;
         right: 10px;
         cursor: pointer;
+    }
+    @media screen and (max-width: 480px) {
+        form {
+            .input-wrapper {
+                input {
+                    width: 90%;
+                }
+            }
+        }
     }
 }

@@ -114,7 +114,7 @@ export default class HomePage extends React.Component<{}, HomeState> {
         if (isLogged) {
             return (
                 <React.Fragment>
-                    <p>You're logged in. </p>
+                    <p className="logged">You're logged in. </p>
                     <StyledLink to="new-monitor">
                         Go to application
                         <span className="glyph-wrapper">

@@ -10,7 +10,7 @@ const  beige = '#fcd489';
 export const StyledButton = styled.button`
     padding: 5px 15px;
     color: ${beige};
-    font-size: 1.75rem;
+    font-size: 1.25rem;
     background-color: transparent;
     border: 2px solid ${beige};
     border-radius: 5px;
@@ -21,12 +21,17 @@ export const StyledButton = styled.button`
         cursor: pointer;
         text-decoration: none;
     }
+
+    @media screen and (max-width: 480px) {
+        padding: 3px 3px;
+
+    }
 `
 
 export const StyledLink = styled(Link)`
     padding: 5px 15px;
     color: ${beige};
-    font-size: 1.75rem;
+    font-size: 1.25rem;
     background-color: transparent;
     border: 2px solid ${beige};
     border-radius: 5px;
@@ -41,7 +46,7 @@ export const StyledLink = styled(Link)`
 
 export const NavbarLink = styled(Link)`
     color: #0e0700;
-    font-size: 1.75rem;
+    font-size: 1.25rem;
     margin: 25px 0; 
 
     &:hover {

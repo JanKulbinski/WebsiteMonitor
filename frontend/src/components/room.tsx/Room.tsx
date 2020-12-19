@@ -54,7 +54,6 @@ const beige = '#fcd489';
 export const DiffButton = styled.button`
     padding: 5px 15px;
     color: ${black};
-    font-size: 1.25rem;
     background-color: ${beige};
     border: 2px solid ${beige};
     border-radius: 5px;

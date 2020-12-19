@@ -14,7 +14,7 @@ type monitorProps = {
 const Wrapper = styled.div`
     width:100%;
     background-color: ${'rgba(252, 218, 156, 0.548)'};
-    font-size: 1.25rem;
+    font-size: 1rem;
     padding: 10px 0 25px;
 
 `
