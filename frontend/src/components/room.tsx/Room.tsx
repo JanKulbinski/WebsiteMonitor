@@ -61,6 +61,10 @@ export const DiffButton = styled.button`
     &:hover {
         cursor: pointer;
     }
+
+    @media screen and (max-width: 480px) {
+        margin: 0 2px;
+    }
 `
 
 const parseKeyWordsOccurences = (keyWords: string) => {

@@ -21,6 +21,11 @@ const Wrapper = styled.div`
 const Label = styled.label`
     font-weight: 500;
     margin-left: 20px;
+
+    @media screen and (max-width: 480px) {
+        margin: 5px 0 0 2px;
+
+    }
 `
 const CheckBoxLabel = styled(Label)`
     margin-right:10px;
@@ -41,7 +46,11 @@ const Input = styled.input`
     padding: 5px;
 `
 const CreateButton = styled(StyledButton)`
-    width:30%
+    width:30%;
+    
+    @media screen and (max-width: 480px) {
+        margin: 5px auto;
+    }
 `
 const emptyMonitor = {
     start: '',

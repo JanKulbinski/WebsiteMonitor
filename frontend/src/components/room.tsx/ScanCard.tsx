@@ -60,7 +60,7 @@ export function ScanCard({ value, index, monitorUrl, onToggle, onModalOpen }: sc
                     aria-expanded={value.isOpen}>
                     <div className="header">
                         {changeDetect(value) ?
-                            <FaExchangeAlt style={{ color: 'green' }}></FaExchangeAlt>
+                            <FaExchangeAlt style={{ color: 'green', marginRight:'5px'}}></FaExchangeAlt>
                             : <FaClipboardCheck></FaClipboardCheck>
                         }
                         <p>{value.date}</p>

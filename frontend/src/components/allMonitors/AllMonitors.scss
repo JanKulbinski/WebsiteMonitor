@@ -25,4 +25,18 @@
             }
         }
     }
+    @media screen and (max-width: 480px) {
+        .header {
+            p {
+                font-size: 1rem;
+                max-width: 90%;
+            }
+            word-wrap: break-word;
+            /* IE 5.5-7 */
+            white-space: -moz-pre-wrap;
+            /* Firefox 1.0-2.0 */
+            white-space: pre-wrap;
+            /* current browsers */
+        }
+    }
 }

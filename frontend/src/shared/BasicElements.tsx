@@ -24,7 +24,6 @@ export const StyledButton = styled.button`
 
     @media screen and (max-width: 480px) {
         padding: 3px 3px;
-
     }
 `
 
