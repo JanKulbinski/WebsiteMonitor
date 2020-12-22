@@ -5,7 +5,7 @@ import shutil
 import re
 
 
-def get_project_path(url):
+def get_project_path(url, subfolder):
     url = url.replace('https://', '')
     url = url.replace('http://', '')
     url = url.replace('/', '//')
@@ -16,11 +16,11 @@ def get_project_path(url):
     if url[-1] == '/':
         url = url[:-1]
     prefix = r'\static'
-    url = f'{constants.PATH_TO_SAVE_STATIC}{prefix}\{url}'
+    url = f'{constants.PATH_TO_SAVE_STATIC}{prefix}\{subfolder}\{url}'
     return url
 
-def delete_folder(url):
-    url = get_project_path(url)
+def delete_folder(url, subfolder):
+    url = get_project_path(url, subfolder)
     shutil.rmtree(url)
     print(f'{url} removed.')
 
@@ -34,8 +34,9 @@ def add_script_to_html(file_path):
     with open(file_path, 'w',  encoding='utf8') as file:
         file.write(str(soup))
 
-def download_whole_page(adress):
-    config.setup_config(adress, 'static')
+def download_whole_page(adress, folder):
+    folder_adress = f'static\{folder}'
+    config.setup_config(adress, folder_adress)
 
     wp = WebPage()
     wp.get(adress)

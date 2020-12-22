@@ -169,8 +169,8 @@ class Scheduler:
                 return element.text
 
     def compare_all_files(self):
-        download_whole_page(self.url)
-        project_path = get_project_path(self.url)
+        download_whole_page(self.url, self.room_id)
+        project_path = get_project_path(self.url, self.room_id)
 
         if not self.text_change or not find_scan(self.room_id, self.scan_id):
             insert_scan(self.scan_id, self.room_id, False)
@@ -192,7 +192,7 @@ class Scheduler:
             else:
                 insert_file(self.scan_id, self.room_id, new_hash, file_name, FileStatus.NEW.value)
         
-        delete_folder(self.url)
+        delete_folder(self.url, self.room_id)
 
     def generate_hash(self, file_name):                   
         with open(file_name, "rb") as f:

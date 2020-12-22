@@ -27,7 +27,7 @@ def save_whole_page():
         abort(make_response(jsonify(message="Session expired"), 401))
 
     adress = request.args.get('adress')
-    html = download_whole_page(adress)
+    html = download_whole_page(adress, user_mail)
     add_script_to_html(html)
 
     webpage_path = SERVER_URL + re.search("static.*", html).group().replace('//', '/')
@@ -60,7 +60,7 @@ def create_monitor():
 
     insert_monitor(room_id, url, choosenElement, keyWords, intervalMinutes, start, end,
      textChange, allFilesChange, author, mailNotification)
-    delete_folder(url)
+    delete_folder(url, user_mail)
 
     worker = Scheduler(room_id, start, end, tag, index, keyWords, intervalMinutes,
      textChange, allFilesChange, author, url, mailNotification)
