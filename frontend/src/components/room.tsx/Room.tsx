@@ -126,9 +126,9 @@ class Room extends React.Component<PropsType, RoomState> {
                     let keyWordsOccuranceList;
                     if ('keyWordsOccurance' in scanElement) {
                         keyWordsOccuranceList = parseKeyWordsOccurences(scanElement.keyWordsOccurance)
-                        const newScan = { ...scanElement, isOpen: false, keyWordsOccuranceList: keyWordsOccuranceList };
-                        scansArray.unshift(newScan)
                     }
+                    const newScan = { ...scanElement, isOpen: false, keyWordsOccuranceList: keyWordsOccuranceList };
+                    scansArray.unshift(newScan)
                 });
                 this.setState({ scans: scansArray, newestScanId: res.data.scans.length + 1 });
             }
