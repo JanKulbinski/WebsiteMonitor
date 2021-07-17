@@ -1,8 +1,13 @@
 # WebsiteMonitor
 A web application that allows to monitor changes on the website or the appearance of the specific keywords.
 
-The application offers the following functionalities:
+### Technologies
+* *React, TypeScript (frontend)*
+* *Flask, Python (backend)*
+* *MySQL (database)*
+* *Ngnix (proxy server)*
 
+### Functionalities
 * signing up and signing in
 * cyclic monitoring of changes on the website specified by the user, within a specified time period and time interval
 * monitoring the entire website or only selected part of it
