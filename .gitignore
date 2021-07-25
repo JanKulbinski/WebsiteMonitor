@@ -13,6 +13,8 @@ backend/blueprints/__pycache__/
 backend/debug.log
 backend/mail_man-config.yaml
 backend/db-config.yaml
+backend/tipy.txt
+backend/hostdriver.log
 
 # FRONTEND
 frontend/node_modules/
