@@ -14,7 +14,7 @@ backend/debug.log
 backend/mail_man-config.yaml
 backend/db-config.yaml
 backend/tipy.txt
-backend/hostdriver.log
+backend/ghostdriver.log
 
 # FRONTEND
 frontend/node_modules/
