@@ -1,5 +1,0 @@
-mysql_host: 'localhost'
-mysql_user: 'root'
-mysql_password: '123'
-mysql_db: 'websiteMonitor'
-mysql_cursorclass: 'DictCursor'
